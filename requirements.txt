@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+celery
+redis
+qdrant-client
+langchain
+langchain-text-splitters
+langchain-huggingface
+sentence-transformers
+langchain-google-genai
+pdfplumber
+PyPDF2
+pytest
+python-multipart
+python-dotenv
+tenacity
