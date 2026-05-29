@@ -11,6 +11,40 @@ The current architecture uses hybrid retrieval:
 
 ## Architecture
 
+### System Architecture Diagram
+
+```mermaid
+sequenceDiagram
+    participant U as Streamlit (Frontend)
+    participant API as FastAPI (Backend)
+    participant C as Celery Worker
+    participant R as Redis (Cache & Broker)
+    participant Q as Qdrant (Vector DB)
+    participant LLM as Gemini 2.5 Flash
+
+    Note over U,LLM: 1. Ingestion Flow (Local / Zero API Cost)
+    U->>API: Upload PDF
+    API->>R: Send Task to Message Broker
+    R->>C: Consume Task
+    C->>C: Chunk Text & HuggingFace Local Embeddings
+    C->>Q: Upsert Vectors (dim: 384)
+    
+    Note over U,LLM: 2. Query Flow (Hybrid RAG)
+    U->>API: Send Question
+    API->>R: Check Semantic Cache
+    alt Cache Hit
+        R-->>API: Return cached answer
+        API-->>U: Fast Response (⚡ Cached)
+    else Cache Miss
+        API->>Q: Retrieve nearest chunks
+        Q-->>API: Return Context
+        API->>LLM: Send Prompt (Context + Question)
+        LLM-->>API: Return Generated Answer
+        API->>R: Save to Cache (TTL)
+        API-->>U: Return Final Answer
+    end
+```
+
 ### Ingestion flow
 1. A client uploads a PDF to `POST /api/v1/documents/upload`.
 2. FastAPI stores the file in `uploads/` and sends a Celery task.
