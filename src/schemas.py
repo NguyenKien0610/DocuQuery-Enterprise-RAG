@@ -22,3 +22,4 @@ class QueryResponse(BaseModel):
     query: str
     answer: str
     cached: bool
+    context: list[str] = []
