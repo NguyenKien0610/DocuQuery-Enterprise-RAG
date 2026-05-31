@@ -1,4 +1,5 @@
 import hashlib
+import json
 import os
 import uuid
 from pathlib import Path
@@ -83,25 +84,36 @@ class _PdfDocumentLoader:
     def __init__(self, file_path: str) -> None:
         self.file_path = file_path
 
-    def load(self) -> list[str]:
+    def load(self) -> list[dict[str, Any]]:
         reader = PdfReader(self.file_path)
-        return [page.extract_text() or "" for page in reader.pages]
+        return [
+            {
+                "text": page.extract_text() or "",
+                "page_number": index + 1,
+            }
+            for index, page in enumerate(reader.pages)
+        ]
 
 
 class _DocxDocumentLoader:
     def __init__(self, file_path: str) -> None:
         self.file_path = file_path
 
-    def load(self) -> list[str]:
-        return [docx2txt.process(self.file_path) or ""]
+    def load(self) -> list[dict[str, Any]]:
+        return [{"text": docx2txt.process(self.file_path) or "", "page_number": None}]
 
 
 class _TextDocumentLoader:
     def __init__(self, file_path: str) -> None:
         self.file_path = file_path
 
-    def load(self) -> list[str]:
-        return [Path(self.file_path).read_text(encoding="utf-8")]
+    def load(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "text": Path(self.file_path).read_text(encoding="utf-8"),
+                "page_number": None,
+            }
+        ]
 
 
 def _collection_exists() -> bool:
@@ -123,10 +135,9 @@ def _create_document_loader(file_path: str):
     raise ValueError(f"Unsupported file extension: {file_extension}")
 
 
-def _extract_document_text(file_path: str) -> str:
+def _load_document_sections(file_path: str) -> list[dict[str, Any]]:
     loader = _create_document_loader(file_path)
-    documents = loader.load()
-    return "\n".join(document for document in documents).strip()
+    return loader.load()
 
 
 def _ensure_collection(vector_size: int) -> None:
@@ -155,11 +166,15 @@ def reset_workspace() -> dict[str, Any]:
         qdrant_client.delete_collection(collection_name=COLLECTION_NAME)
 
     ensure_qdrant_collection()
-    redis_client.flushall()
+    deleted_cache_keys = 0
+    cache_keys = list(redis_client.scan_iter(match="rag:answer:*"))
+    if cache_keys:
+        deleted_cache_keys = int(redis_client.delete(*cache_keys))
     return {
         "status": "workspace_reset",
         "collection": COLLECTION_NAME,
         "cache_cleared": True,
+        "cache_keys_deleted": deleted_cache_keys,
         "vector_store_cleared": True,
     }
 
@@ -184,6 +199,46 @@ def _response_text(content: Any) -> str:
                     parts.append(str(text))
         return "\n".join(parts).strip()
     return str(content)
+
+
+def _serialize_context_chunk(result: Any) -> dict[str, Any] | None:
+    payload = getattr(result, "payload", None) or {}
+    text = str(payload.get("text", "")).strip()
+    if not text:
+        return None
+
+    source_path = str(payload.get("source", "")).strip()
+    source_file = Path(source_path).name if source_path else "Unknown source"
+    chunk_index = int(payload.get("chunk_index", -1))
+    page_number = payload.get("page_number")
+    if page_number is not None:
+        try:
+            page_number = int(page_number)
+        except (TypeError, ValueError):
+            page_number = None
+
+    return {
+        "source_file": source_file,
+        "source_path": source_path,
+        "chunk_index": chunk_index,
+        "page_number": page_number,
+        "text": text,
+    }
+
+
+def _deserialize_cached_context(cache_value: str) -> tuple[str, list[dict[str, Any]]]:
+    try:
+        payload = json.loads(cache_value)
+    except json.JSONDecodeError:
+        return cache_value, []
+
+    if not isinstance(payload, dict):
+        return cache_value, []
+
+    answer = str(payload.get("answer", ""))
+    raw_context = payload.get("context", [])
+    context_items = [dict(item) for item in raw_context if isinstance(item, dict)]
+    return answer, context_items
 
 
 def _fallback_answer(query_text: str, context_chunks: list[str], error: Exception) -> str:
@@ -245,35 +300,48 @@ def _invoke_llm(prompt: str) -> Any:
 
 def ingest_document(file_path: str) -> dict[str, Any]:
     absolute_path = str(Path(file_path).resolve())
-    document_text = _extract_document_text(absolute_path)
+    document_sections = _load_document_sections(absolute_path)
+    section_texts = [str(section.get("text", "")).strip() for section in document_sections]
+    document_text = "\n".join(text for text in section_texts if text).strip()
     if not document_text:
         raise ValueError(f"No extractable text found in document: {absolute_path}")
 
-    chunks = text_splitter.split_text(document_text)
-    if not chunks:
-        raise ValueError(f"Unable to create chunks from document: {absolute_path}")
-
     points_indexed = 0
-    for idx, chunk in enumerate(chunks):
-        vector_batch = embeddings.embed_documents([chunk])
-        if not vector_batch:
-            raise ValueError(f"Embedding generation returned no vector for chunk {idx}.")
+    for section in document_sections:
+        section_text = str(section.get("text", "")).strip()
+        if not section_text:
+            continue
 
-        vector = vector_batch[0]
-        if points_indexed == 0:
-            _ensure_collection(vector_size=len(vector))
+        chunks = text_splitter.split_text(section_text)
+        if not chunks:
+            continue
 
-        point = models.PointStruct(
-            id=str(uuid.uuid4()),
-            vector=vector,
-            payload={
-                "text": chunk,
-                "source": absolute_path,
-                "chunk_index": idx,
-            },
-        )
-        qdrant_client.upsert(collection_name=COLLECTION_NAME, points=[point])
-        points_indexed += 1
+        for chunk in chunks:
+            vector_batch = embeddings.embed_documents([chunk])
+            if not vector_batch:
+                raise ValueError(
+                    f"Embedding generation returned no vector for chunk {points_indexed}."
+                )
+
+            vector = vector_batch[0]
+            if points_indexed == 0:
+                _ensure_collection(vector_size=len(vector))
+
+            point = models.PointStruct(
+                id=str(uuid.uuid4()),
+                vector=vector,
+                payload={
+                    "text": chunk,
+                    "source": absolute_path,
+                    "chunk_index": points_indexed,
+                    "page_number": section.get("page_number"),
+                },
+            )
+            qdrant_client.upsert(collection_name=COLLECTION_NAME, points=[point])
+            points_indexed += 1
+
+    if points_indexed == 0:
+        raise ValueError(f"Unable to create chunks from document: {absolute_path}")
 
     return {
         "status": "ingested",
@@ -284,20 +352,25 @@ def ingest_document(file_path: str) -> dict[str, Any]:
 
 def ask_question(query_text: str) -> dict[str, Any]:
     key = _cache_key(query_text)
-    cached_answer = redis_client.get(key)
-    if cached_answer:
+    cached_payload = redis_client.get(key)
+    if cached_payload:
+        cached_answer, cached_context = _deserialize_cached_context(cached_payload)
         return {
             "query": query_text,
             "answer": cached_answer,
             "cached": True,
-            "context": [],
+            "context": cached_context,
         }
 
     try:
         query_vector = embeddings.embed_query(query_text)
     except Exception as exc:
         answer = _fallback_answer(query_text, [], exc)
-        redis_client.setex(key, FALLBACK_CACHE_TTL_SECONDS, answer)
+        redis_client.setex(
+            key,
+            FALLBACK_CACHE_TTL_SECONDS,
+            json.dumps({"answer": answer, "context": []}, ensure_ascii=False),
+        )
         return {
             "query": query_text,
             "answer": answer,
@@ -313,11 +386,12 @@ def ask_question(query_text: str) -> dict[str, Any]:
     )
     results = getattr(search_response, "points", [])
 
-    context_chunks = [
-        str(result.payload.get("text", "")).strip()
+    context_items = [
+        serialized_chunk
         for result in results
-        if result.payload and result.payload.get("text")
+        if (serialized_chunk := _serialize_context_chunk(result)) is not None
     ]
+    context_chunks = [item["text"] for item in context_items]
     context = "\n\n".join(context_chunks) if context_chunks else "No relevant context found."
 
     prompt = answer_prompt.format(context=context, question=query_text)
@@ -327,18 +401,26 @@ def ask_question(query_text: str) -> dict[str, Any]:
         answer = _response_text(response.content).strip()
     except Exception as exc:
         answer = _fallback_answer(query_text, context_chunks, exc)
-        redis_client.setex(key, FALLBACK_CACHE_TTL_SECONDS, answer)
+        redis_client.setex(
+            key,
+            FALLBACK_CACHE_TTL_SECONDS,
+            json.dumps({"answer": answer, "context": context_items}, ensure_ascii=False),
+        )
         return {
             "query": query_text,
             "answer": answer,
             "cached": False,
-            "context": context_chunks,
+            "context": context_items,
         }
 
-    redis_client.setex(key, CACHE_TTL_SECONDS, answer)
+    redis_client.setex(
+        key,
+        CACHE_TTL_SECONDS,
+        json.dumps({"answer": answer, "context": context_items}, ensure_ascii=False),
+    )
     return {
         "query": query_text,
         "answer": answer,
         "cached": False,
-        "context": context_chunks,
+        "context": context_items,
     }
