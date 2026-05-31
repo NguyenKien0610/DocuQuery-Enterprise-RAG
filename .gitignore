@@ -218,3 +218,8 @@ __marimo__/
 .streamlit/secrets.toml
 
 uploads/
+
+# Local benchmark artifacts
+benchmark_results*.json
+.uvicorn-bench.*
+.celery-bench.*
