@@ -9,8 +9,10 @@ langchain-huggingface
 sentence-transformers
 langchain-google-genai
 pdfplumber
-PyPDF2
+pypdf
+docx2txt
 pytest
+httpx
 python-multipart
 python-dotenv
 tenacity
