@@ -4,14 +4,14 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-import pdfplumber
+import docx2txt
 import redis
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import PromptTemplate
-from PyPDF2 import PdfReader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pypdf import PdfReader
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
@@ -36,7 +36,11 @@ LOCAL_EMBEDDING_MODEL = os.getenv("LOCAL_EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 GEMINI_CHAT_MODEL = os.getenv("GEMINI_CHAT_MODEL", "models/gemini-2.5-flash")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 
-qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+qdrant_client = QdrantClient(
+    host=QDRANT_HOST,
+    port=QDRANT_PORT,
+    check_compatibility=False,
+)
 redis_client = redis.Redis(
     host=REDIS_HOST,
     port=REDIS_PORT,
@@ -72,24 +76,61 @@ answer_prompt = PromptTemplate(
     ),
 )
 
+SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
-def _extract_pdf_text(file_path: str) -> str:
-    pages: list[str] = []
-    try:
-        with pdfplumber.open(file_path) as pdf:
-            for page in pdf.pages:
-                pages.append(page.extract_text() or "")
-    except Exception:
-        reader = PdfReader(file_path)
-        for page in reader.pages:
-            pages.append(page.extract_text() or "")
-    return "\n".join(pages).strip()
+
+class _PdfDocumentLoader:
+    def __init__(self, file_path: str) -> None:
+        self.file_path = file_path
+
+    def load(self) -> list[str]:
+        reader = PdfReader(self.file_path)
+        return [page.extract_text() or "" for page in reader.pages]
+
+
+class _DocxDocumentLoader:
+    def __init__(self, file_path: str) -> None:
+        self.file_path = file_path
+
+    def load(self) -> list[str]:
+        return [docx2txt.process(self.file_path) or ""]
+
+
+class _TextDocumentLoader:
+    def __init__(self, file_path: str) -> None:
+        self.file_path = file_path
+
+    def load(self) -> list[str]:
+        return [Path(self.file_path).read_text(encoding="utf-8")]
+
+
+def _collection_exists() -> bool:
+    collections = qdrant_client.get_collections().collections
+    names = {collection.name for collection in collections}
+    return COLLECTION_NAME in names
+
+
+def _create_document_loader(file_path: str):
+    file_extension = Path(file_path).suffix.lower()
+
+    if file_extension == ".pdf":
+        return _PdfDocumentLoader(file_path)
+    if file_extension == ".docx":
+        return _DocxDocumentLoader(file_path)
+    if file_extension == ".txt":
+        return _TextDocumentLoader(file_path)
+
+    raise ValueError(f"Unsupported file extension: {file_extension}")
+
+
+def _extract_document_text(file_path: str) -> str:
+    loader = _create_document_loader(file_path)
+    documents = loader.load()
+    return "\n".join(document for document in documents).strip()
 
 
 def _ensure_collection(vector_size: int) -> None:
-    collections = qdrant_client.get_collections().collections
-    names = {collection.name for collection in collections}
-    if COLLECTION_NAME in names:
+    if _collection_exists():
         return
 
     qdrant_client.create_collection(
@@ -102,13 +143,25 @@ def _ensure_collection(vector_size: int) -> None:
 
 
 def ensure_qdrant_collection() -> None:
-    collections = qdrant_client.get_collections().collections
-    names = {collection.name for collection in collections}
-    if COLLECTION_NAME in names:
+    if _collection_exists():
         return
 
     probe_vector = embeddings.embed_query("qdrant_collection_init")
     _ensure_collection(vector_size=len(probe_vector))
+
+
+def reset_workspace() -> dict[str, Any]:
+    if _collection_exists():
+        qdrant_client.delete_collection(collection_name=COLLECTION_NAME)
+
+    ensure_qdrant_collection()
+    redis_client.flushall()
+    return {
+        "status": "workspace_reset",
+        "collection": COLLECTION_NAME,
+        "cache_cleared": True,
+        "vector_store_cleared": True,
+    }
 
 
 def _cache_key(query_text: str) -> str:
@@ -192,13 +245,13 @@ def _invoke_llm(prompt: str) -> Any:
 
 def ingest_document(file_path: str) -> dict[str, Any]:
     absolute_path = str(Path(file_path).resolve())
-    document_text = _extract_pdf_text(absolute_path)
+    document_text = _extract_document_text(absolute_path)
     if not document_text:
-        raise ValueError(f"No extractable text found in PDF: {absolute_path}")
+        raise ValueError(f"No extractable text found in document: {absolute_path}")
 
     chunks = text_splitter.split_text(document_text)
     if not chunks:
-        raise ValueError(f"Unable to create chunks from PDF: {absolute_path}")
+        raise ValueError(f"Unable to create chunks from document: {absolute_path}")
 
     points_indexed = 0
     for idx, chunk in enumerate(chunks):
@@ -233,14 +286,24 @@ def ask_question(query_text: str) -> dict[str, Any]:
     key = _cache_key(query_text)
     cached_answer = redis_client.get(key)
     if cached_answer:
-        return {"query": query_text, "answer": cached_answer, "cached": True}
+        return {
+            "query": query_text,
+            "answer": cached_answer,
+            "cached": True,
+            "context": [],
+        }
 
     try:
         query_vector = embeddings.embed_query(query_text)
     except Exception as exc:
         answer = _fallback_answer(query_text, [], exc)
         redis_client.setex(key, FALLBACK_CACHE_TTL_SECONDS, answer)
-        return {"query": query_text, "answer": answer, "cached": False}
+        return {
+            "query": query_text,
+            "answer": answer,
+            "cached": False,
+            "context": [],
+        }
 
     search_response = qdrant_client.query_points(
         collection_name=COLLECTION_NAME,
@@ -265,7 +328,17 @@ def ask_question(query_text: str) -> dict[str, Any]:
     except Exception as exc:
         answer = _fallback_answer(query_text, context_chunks, exc)
         redis_client.setex(key, FALLBACK_CACHE_TTL_SECONDS, answer)
-        return {"query": query_text, "answer": answer, "cached": False}
+        return {
+            "query": query_text,
+            "answer": answer,
+            "cached": False,
+            "context": context_chunks,
+        }
 
     redis_client.setex(key, CACHE_TTL_SECONDS, answer)
-    return {"query": query_text, "answer": answer, "cached": False}
+    return {
+        "query": query_text,
+        "answer": answer,
+        "cached": False,
+        "context": context_chunks,
+    }
