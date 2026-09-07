@@ -14,9 +14,12 @@ if str(PROJECT_ROOT) not in sys.path:
 import src.main as main
 import src.rag_engine as rag_engine
 
+AUTH_HEADERS = {"X-API-Key": "test-api-key", "X-Workspace-ID": "team-a"}
+
 
 @pytest.fixture
 def client(monkeypatch, tmp_path):
+    monkeypatch.setenv("DOCUQUERY_API_KEY", "test-api-key")
     monkeypatch.setattr(main, "ensure_qdrant_collection", lambda: None)
     monkeypatch.setattr(main, "UPLOAD_DIR", tmp_path)
     tmp_path.mkdir(parents=True, exist_ok=True)
@@ -36,6 +39,7 @@ def test_upload_accepts_valid_pdf_and_returns_task_id(client, monkeypatch):
 
     response = client.post(
         "/api/v1/documents/upload",
+        headers=AUTH_HEADERS,
         files={"file": ("sample.pdf", BytesIO(b"%PDF-1.4 valid pdf payload"), "application/pdf")},
     )
 
@@ -52,6 +56,7 @@ def test_upload_accepts_empty_pdf_payload_boundary_case(client, monkeypatch):
 
     response = client.post(
         "/api/v1/documents/upload",
+        headers=AUTH_HEADERS,
         files={"file": ("empty.pdf", BytesIO(b""), "application/pdf")},
     )
 
@@ -62,6 +67,7 @@ def test_upload_accepts_empty_pdf_payload_boundary_case(client, monkeypatch):
 def test_upload_rejects_non_pdf_extension(client):
     response = client.post(
         "/api/v1/documents/upload",
+        headers=AUTH_HEADERS,
         files={"file": ("image.png", BytesIO(b"not a document"), "image/png")},
     )
 
@@ -103,7 +109,11 @@ def test_query_returns_cached_answer_on_cache_hit(client, monkeypatch):
         SimpleNamespace(query_points=fail_if_called),
     )
 
-    response = client.post("/api/v1/query", json={"query": "What is cached?"})
+    response = client.post(
+        "/api/v1/query",
+        headers=AUTH_HEADERS,
+        json={"query": "What is cached?"},
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -166,7 +176,11 @@ def test_query_returns_context_and_fresh_answer_on_cache_miss(client, monkeypatc
         lambda prompt: SimpleNamespace(content="Fresh generated answer"),
     )
 
-    response = client.post("/api/v1/query", json={"query": "Explain the document"})
+    response = client.post(
+        "/api/v1/query",
+        headers=AUTH_HEADERS,
+        json={"query": "Explain the document"},
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -210,3 +224,59 @@ def test_query_returns_context_and_fresh_answer_on_cache_miss(client, monkeypatc
             },
         ],
     }
+
+
+def test_api_rejects_missing_api_key(client):
+    response = client.get(
+        "/api/v1/documents",
+        headers={"X-Workspace-ID": "team-a"},
+    )
+
+    assert response.status_code == 401
+
+
+def test_api_rejects_wrong_api_key(client):
+    response = client.get(
+        "/api/v1/documents",
+        headers={"X-API-Key": "wrong", "X-Workspace-ID": "team-a"},
+    )
+
+    assert response.status_code == 401
+
+
+def test_api_fails_closed_without_server_key(client, monkeypatch):
+    monkeypatch.delenv("DOCUQUERY_API_KEY", raising=False)
+
+    response = client.get("/api/v1/documents", headers=AUTH_HEADERS)
+
+    assert response.status_code == 503
+
+
+def test_api_rejects_invalid_workspace(client):
+    response = client.get(
+        "/api/v1/documents",
+        headers={"X-API-Key": "test-api-key", "X-Workspace-ID": "../team-a"},
+    )
+
+    assert response.status_code == 422
+
+
+def test_query_rejects_whitespace(client, monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "ask_question",
+        lambda query: {
+            "query": query,
+            "answer": "Unexpected answer",
+            "cached": False,
+            "context": [],
+        },
+    )
+
+    response = client.post(
+        "/api/v1/query",
+        headers=AUTH_HEADERS,
+        json={"query": "   "},
+    )
+
+    assert response.status_code == 422

@@ -3,6 +3,7 @@ import shutil
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Annotated
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -12,6 +13,7 @@ load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=True)
 
 from src.rag_engine import ask_question, ensure_qdrant_collection, reset_workspace
 from src.schemas import QueryRequest, QueryResponse, TaskStatusResponse, UploadResponse
+from src.security import RequestContextDep
 from src.worker import celery_app, process_document_task
 
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads"))
@@ -70,7 +72,10 @@ def _delete_uploaded_documents() -> int:
 
 
 @app.post("/api/v1/documents/upload", response_model=UploadResponse)
-async def upload_document(file: UploadFile = File(...)) -> UploadResponse:
+async def upload_document(
+    file: Annotated[UploadFile, File()],
+    context: RequestContextDep,
+) -> UploadResponse:
     if not file.filename:
         raise HTTPException(status_code=400, detail="A file is required.")
 
@@ -90,7 +95,7 @@ async def upload_document(file: UploadFile = File(...)) -> UploadResponse:
 
 
 @app.get("/api/v1/documents/status/{task_id}", response_model=TaskStatusResponse)
-def get_document_status(task_id: str) -> TaskStatusResponse:
+def get_document_status(task_id: str, context: RequestContextDep) -> TaskStatusResponse:
     task_result = celery_app.AsyncResult(task_id)
 
     if task_result.failed():
@@ -109,12 +114,12 @@ def get_document_status(task_id: str) -> TaskStatusResponse:
 
 
 @app.get("/api/v1/documents")
-def list_documents() -> dict:
+def list_documents(context: RequestContextDep) -> dict:
     return {"documents": _list_uploaded_documents()}
 
 
 @app.post("/api/v1/query", response_model=QueryResponse)
-def query_documents(payload: QueryRequest) -> QueryResponse:
+def query_documents(payload: QueryRequest, context: RequestContextDep) -> QueryResponse:
     try:
         result = ask_question(payload.query)
     except Exception as exc:
@@ -128,7 +133,7 @@ def query_documents(payload: QueryRequest) -> QueryResponse:
 
 
 @app.delete("/api/v1/workspace/reset")
-def reset_workspace_endpoint() -> dict:
+def reset_workspace_endpoint(context: RequestContextDep) -> dict:
     try:
         reset_result = reset_workspace()
         deleted_files = _delete_uploaded_documents()

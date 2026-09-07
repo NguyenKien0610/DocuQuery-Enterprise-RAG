@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class UploadResponse(BaseModel):
@@ -15,7 +15,15 @@ class TaskStatusResponse(BaseModel):
 
 
 class QueryRequest(BaseModel):
-    query: str
+    query: str = Field(min_length=1, max_length=4000)
+
+    @field_validator("query")
+    @classmethod
+    def strip_non_empty_query(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Query must not be empty.")
+        return normalized
 
 
 class ContextChunk(BaseModel):
