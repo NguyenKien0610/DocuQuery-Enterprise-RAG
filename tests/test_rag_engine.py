@@ -252,3 +252,37 @@ def test_workspace_lock_rejects_busy_workspace(monkeypatch):
     with pytest.raises(rag_engine.WorkspaceBusyError):
         with rag_engine.workspace_lock("team-a"):
             pytest.fail("Busy workspace lock was entered.")
+
+
+def test_reset_deletes_only_requested_workspace(monkeypatch, tmp_path):
+    team_a = tmp_path / "team-a"
+    team_b = tmp_path / "team-b"
+    team_a.mkdir()
+    team_b.mkdir()
+    (team_a / "a.txt").write_text("a", encoding="utf-8")
+    (team_b / "b.txt").write_text("b", encoding="utf-8")
+    delete_calls = []
+    versions = []
+    monkeypatch.setattr(rag_engine, "workspace_lock", lambda workspace: nullcontext())
+    monkeypatch.setattr(rag_engine, "_collection_exists", lambda: True)
+    monkeypatch.setattr(
+        rag_engine.qdrant_client,
+        "delete",
+        lambda **kwargs: delete_calls.append(kwargs),
+    )
+    monkeypatch.setattr(
+        rag_engine,
+        "advance_corpus_version",
+        lambda workspace: versions.append(workspace) or 4,
+    )
+
+    result = rag_engine.reset_workspace("team-a", tmp_path)
+
+    assert not team_a.exists()
+    assert (team_b / "b.txt").read_text(encoding="utf-8") == "b"
+    assert result["deleted_files"] == 1
+    assert result["corpus_version"] == 4
+    assert versions == ["team-a"]
+    selector = delete_calls[0]["points_selector"]
+    assert selector.filter.must[0].key == "workspace_id"
+    assert selector.filter.must[0].match.value == "team-a"

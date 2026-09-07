@@ -1,6 +1,5 @@
 import os
 import logging
-import shutil
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -10,7 +9,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=True)
+load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=False)
 
 from src.rag_engine import (
     ask_question,
@@ -19,6 +18,7 @@ from src.rag_engine import (
     remove_task_workspace,
     reset_workspace,
     task_belongs_to_workspace,
+    WorkspaceBusyError,
 )
 from src.schemas import QueryRequest, QueryResponse, TaskStatusResponse, UploadResponse
 from src.security import RequestContextDep
@@ -65,29 +65,6 @@ def _list_uploaded_documents(workspace_id: str) -> list[str]:
             status_code=503,
             detail=f"Failed to read uploaded documents: {exc}",
         ) from exc
-
-
-def _delete_uploaded_documents() -> int:
-    deleted_count = 0
-    if not UPLOAD_DIR.exists():
-        return deleted_count
-
-    for file_path in UPLOAD_DIR.iterdir():
-        if (
-            not file_path.is_file()
-            or file_path.suffix.lower() not in SUPPORTED_UPLOAD_EXTENSIONS
-        ):
-            continue
-        try:
-            file_path.unlink()
-            deleted_count += 1
-        except OSError as exc:
-            raise HTTPException(
-                status_code=503,
-                detail=f"Failed to delete uploaded document '{file_path.name}': {exc}",
-            ) from exc
-
-    return deleted_count
 
 
 @app.post("/api/v1/documents/upload", response_model=UploadResponse)
@@ -169,7 +146,11 @@ def query_documents(payload: QueryRequest, context: RequestContextDep) -> QueryR
     try:
         result = ask_question(payload.query, context.workspace_id)
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"Query processing failed: {exc}") from exc
+        logger.exception("Query processing failed")
+        raise HTTPException(
+            status_code=503,
+            detail="Query service is temporarily unavailable.",
+        ) from exc
     return QueryResponse(
         query=result["query"],
         answer=result["answer"],
@@ -181,8 +162,12 @@ def query_documents(payload: QueryRequest, context: RequestContextDep) -> QueryR
 @app.delete("/api/v1/workspace/reset")
 def reset_workspace_endpoint(context: RequestContextDep) -> dict:
     try:
-        reset_result = reset_workspace()
-        deleted_files = _delete_uploaded_documents()
-        return {**reset_result, "deleted_files": deleted_files}
+        return reset_workspace(context.workspace_id, UPLOAD_DIR)
+    except WorkspaceBusyError as exc:
+        raise HTTPException(status_code=409, detail="Workspace is busy.") from exc
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"Workspace reset failed: {exc}") from exc
+        logger.exception("Workspace reset failed")
+        raise HTTPException(
+            status_code=503,
+            detail="Workspace reset is temporarily unavailable.",
+        ) from exc

@@ -370,3 +370,64 @@ def test_query_rejects_whitespace(client, monkeypatch):
     )
 
     assert response.status_code == 422
+
+
+def test_query_hides_internal_error_details(client, monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "ask_question",
+        lambda query, workspace: (_ for _ in ()).throw(
+            RuntimeError("secret-internal-path")
+        ),
+    )
+
+    response = client.post(
+        "/api/v1/query",
+        headers=AUTH_HEADERS,
+        json={"query": "Question"},
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Query service is temporarily unavailable."}
+    assert "secret-internal-path" not in response.text
+
+
+def test_reset_maps_busy_workspace_to_conflict(client, monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "reset_workspace",
+        lambda workspace, upload_root: (_ for _ in ()).throw(
+            rag_engine.WorkspaceBusyError("team-a is busy")
+        ),
+    )
+
+    response = client.delete("/api/v1/workspace/reset", headers=AUTH_HEADERS)
+
+    assert response.status_code == 409
+    assert response.json() == {"detail": "Workspace is busy."}
+
+
+def test_failed_task_status_hides_worker_exception(client, monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "task_belongs_to_workspace",
+        lambda task_id, workspace_id: True,
+    )
+    monkeypatch.setattr(
+        main.celery_app,
+        "AsyncResult",
+        lambda task_id: SimpleNamespace(
+            failed=lambda: True,
+            status="FAILURE",
+            result=RuntimeError("private worker path"),
+        ),
+    )
+
+    response = client.get(
+        "/api/v1/documents/status/failed-task",
+        headers=AUTH_HEADERS,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["error"] == "Document processing failed."
+    assert "private worker path" not in response.text

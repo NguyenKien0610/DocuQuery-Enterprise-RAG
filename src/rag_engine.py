@@ -20,7 +20,7 @@ from qdrant_client.http import models
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=True)
+load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=False)
 
 QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
 QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
@@ -213,21 +213,54 @@ def ensure_qdrant_collection() -> None:
     _ensure_collection(vector_size=len(probe_vector))
 
 
-def reset_workspace() -> dict[str, Any]:
-    if _collection_exists():
-        qdrant_client.delete_collection(collection_name=COLLECTION_NAME)
+def _workspace_filter(workspace_id: str) -> models.Filter:
+    return models.Filter(
+        must=[
+            models.FieldCondition(
+                key="workspace_id",
+                match=models.MatchValue(value=workspace_id),
+            )
+        ]
+    )
 
-    ensure_qdrant_collection()
-    deleted_cache_keys = 0
-    cache_keys = list(redis_client.scan_iter(match="rag:answer:*"))
-    if cache_keys:
-        deleted_cache_keys = int(redis_client.delete(*cache_keys))
+
+def _delete_workspace_files(upload_root: Path, workspace_id: str) -> int:
+    resolved_root = upload_root.resolve()
+    workspace_dir = (resolved_root / workspace_id).resolve()
+    if workspace_dir.parent != resolved_root:
+        raise ValueError("Workspace upload path escapes the upload root.")
+    if not workspace_dir.exists():
+        return 0
+
+    deleted_files = 0
+    for path in workspace_dir.iterdir():
+        if path.is_file():
+            path.unlink()
+            deleted_files += 1
+    workspace_dir.rmdir()
+    return deleted_files
+
+
+def reset_workspace(workspace_id: str, upload_root: Path) -> dict[str, Any]:
+    with workspace_lock(workspace_id):
+        deleted_files = _delete_workspace_files(upload_root, workspace_id)
+        if _collection_exists():
+            qdrant_client.delete(
+                collection_name=COLLECTION_NAME,
+                points_selector=models.FilterSelector(
+                    filter=_workspace_filter(workspace_id)
+                ),
+                wait=True,
+            )
+        corpus_version = advance_corpus_version(workspace_id)
+
     return {
         "status": "workspace_reset",
+        "workspace_id": workspace_id,
         "collection": COLLECTION_NAME,
-        "cache_cleared": True,
-        "cache_keys_deleted": deleted_cache_keys,
+        "corpus_version": corpus_version,
         "vector_store_cleared": True,
+        "deleted_files": deleted_files,
     }
 
 
@@ -461,14 +494,7 @@ def ask_question(query_text: str, workspace_id: str) -> dict[str, Any]:
     search_response = qdrant_client.query_points(
         collection_name=COLLECTION_NAME,
         query=query_vector,
-        query_filter=models.Filter(
-            must=[
-                models.FieldCondition(
-                    key="workspace_id",
-                    match=models.MatchValue(value=workspace_id),
-                )
-            ]
-        ),
+        query_filter=_workspace_filter(workspace_id),
         limit=TOP_K,
         with_payload=True,
     )
