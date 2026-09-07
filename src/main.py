@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -12,13 +12,13 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=False)
 
 from src.rag_engine import (
+    WorkspaceBusyError,
     ask_question,
     ensure_qdrant_collection,
     register_task_workspace,
     remove_task_workspace,
     reset_workspace,
     task_belongs_to_workspace,
-    WorkspaceBusyError,
 )
 from src.schemas import QueryRequest, QueryResponse, TaskStatusResponse, UploadResponse
 from src.security import RequestContextDep
@@ -61,9 +61,10 @@ def _list_uploaded_documents(workspace_id: str) -> list[str]:
             ]
         )
     except OSError as exc:
+        logger.exception("Failed to read uploaded documents")
         raise HTTPException(
             status_code=503,
-            detail=f"Failed to read uploaded documents: {exc}",
+            detail="Document storage is temporarily unavailable.",
         ) from exc
 
 
@@ -117,23 +118,32 @@ async def upload_document(
 
 @app.get("/api/v1/documents/status/{task_id}", response_model=TaskStatusResponse)
 def get_document_status(task_id: str, context: RequestContextDep) -> TaskStatusResponse:
-    if not task_belongs_to_workspace(task_id, context.workspace_id):
-        raise HTTPException(status_code=404, detail="Task not found.")
-    task_result = celery_app.AsyncResult(task_id)
+    try:
+        if not task_belongs_to_workspace(task_id, context.workspace_id):
+            raise HTTPException(status_code=404, detail="Task not found.")
+        task_result = celery_app.AsyncResult(task_id)
 
-    if task_result.failed():
+        if task_result.failed():
+            return TaskStatusResponse(
+                task_id=task_id,
+                status=task_result.status,
+                error="Document processing failed.",
+            )
+
+        result_payload = task_result.result if task_result.successful() else None
         return TaskStatusResponse(
             task_id=task_id,
             status=task_result.status,
-            error="Document processing failed.",
+            result=result_payload if isinstance(result_payload, dict) else None,
         )
-
-    result_payload = task_result.result if task_result.successful() else None
-    return TaskStatusResponse(
-        task_id=task_id,
-        status=task_result.status,
-        result=result_payload if isinstance(result_payload, dict) else None,
-    )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Task status lookup failed")
+        raise HTTPException(
+            status_code=503,
+            detail="Task status is temporarily unavailable.",
+        ) from exc
 
 
 @app.get("/api/v1/documents")

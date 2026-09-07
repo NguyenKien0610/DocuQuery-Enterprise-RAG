@@ -249,9 +249,11 @@ def test_workspace_lock_rejects_busy_workspace(monkeypatch):
     fake_lock = SimpleNamespace(acquire=lambda blocking: False)
     monkeypatch.setattr(rag_engine.redis_client, "lock", lambda **kwargs: fake_lock)
 
-    with pytest.raises(rag_engine.WorkspaceBusyError):
-        with rag_engine.workspace_lock("team-a"):
-            pytest.fail("Busy workspace lock was entered.")
+    with (
+        pytest.raises(rag_engine.WorkspaceBusyError),
+        rag_engine.workspace_lock("team-a"),
+    ):
+        pytest.fail("Busy workspace lock was entered.")
 
 
 def test_reset_deletes_only_requested_workspace(monkeypatch, tmp_path):

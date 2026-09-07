@@ -220,8 +220,12 @@ def render_context_chunks(context: list[dict[str, object]]) -> None:
             for chunk_idx, chunk in enumerate(chunks, start=1):
                 raw_chunk_index = chunk.get("chunk_index", chunk_idx - 1)
                 try:
-                    chunk_number = int(raw_chunk_index) + 1
-                except (TypeError, ValueError):
+                    chunk_number = (
+                        int(raw_chunk_index) + 1
+                        if isinstance(raw_chunk_index, (int, str))
+                        else chunk_idx
+                    )
+                except ValueError:
                     chunk_number = chunk_idx
 
                 formatted_chunk = _format_context_chunk(str(chunk.get("text", "")))

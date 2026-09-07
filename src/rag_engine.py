@@ -2,17 +2,18 @@ import hashlib
 import json
 import os
 import uuid
+from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 import docx2txt
 import redis
 from dotenv import load_dotenv
+from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_core.prompts import PromptTemplate
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
 from qdrant_client import QdrantClient
@@ -354,7 +355,7 @@ def _fallback_answer(query_text: str, context_chunks: list[str]) -> str:
     )
 
 
-def _should_retry_llm_error(error: Exception) -> bool:
+def _should_retry_llm_error(error: BaseException) -> bool:
     message = str(error).lower()
     non_retryable_markers = (
         "resource_exhausted",
@@ -477,7 +478,7 @@ def ask_question(query_text: str, workspace_id: str) -> dict[str, Any]:
 
     try:
         query_vector = get_embeddings().embed_query(query_text)
-    except Exception as exc:
+    except Exception:  # noqa: BLE001 - embedding outages use the degraded response path
         answer = _fallback_answer(query_text, [])
         redis_client.setex(
             key,
@@ -513,7 +514,7 @@ def ask_question(query_text: str, workspace_id: str) -> dict[str, Any]:
     try:
         response = _invoke_llm(prompt)
         answer = _response_text(response.content).strip()
-    except Exception as exc:
+    except Exception:  # noqa: BLE001 - provider outages use the degraded response path
         answer = _fallback_answer(query_text, context_chunks)
         redis_client.setex(
             key,

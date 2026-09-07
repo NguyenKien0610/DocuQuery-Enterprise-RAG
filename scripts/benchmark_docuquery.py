@@ -28,7 +28,7 @@ def _request_json(
     response.raise_for_status()
     payload = response.json()
     if not isinstance(payload, dict):
-        raise ValueError(f"Expected JSON object from {url}, got {type(payload).__name__}.")
+        raise TypeError(f"Expected JSON object from {url}, got {type(payload).__name__}.")
     return payload
 
 

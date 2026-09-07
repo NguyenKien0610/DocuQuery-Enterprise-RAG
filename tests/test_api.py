@@ -1,8 +1,8 @@
-import json
 import hashlib
+import json
+import sys
 from io import BytesIO
 from pathlib import Path
-import sys
 from types import SimpleNamespace
 
 import pytest
@@ -12,8 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import src.main as main
-import src.rag_engine as rag_engine
+from src import main, rag_engine
 
 AUTH_HEADERS = {"X-API-Key": "test-api-key", "X-Workspace-ID": "team-a"}
 
@@ -431,3 +430,43 @@ def test_failed_task_status_hides_worker_exception(client, monkeypatch):
     assert response.status_code == 200
     assert response.json()["error"] == "Document processing failed."
     assert "private worker path" not in response.text
+
+
+def test_document_listing_hides_filesystem_error(client, monkeypatch):
+    class BrokenUploadRoot:
+        def __truediv__(self, child):
+            return self
+
+        def exists(self):
+            return True
+
+        def iterdir(self):
+            raise OSError("private-upload-path")
+
+    monkeypatch.setattr(main, "UPLOAD_DIR", BrokenUploadRoot())
+
+    response = client.get("/api/v1/documents", headers=AUTH_HEADERS)
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Document storage is temporarily unavailable."}
+    assert "private-upload-path" not in response.text
+
+
+def test_task_status_hides_backend_error(client, monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "task_belongs_to_workspace",
+        lambda task_id, workspace_id: (_ for _ in ()).throw(
+            RuntimeError("private-redis-address")
+        ),
+    )
+
+    with TestClient(main.app, raise_server_exceptions=False) as safe_client:
+        response = safe_client.get(
+            "/api/v1/documents/status/task-id",
+            headers=AUTH_HEADERS,
+        )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Task status is temporarily unavailable."}
+    assert "private-redis-address" not in response.text
