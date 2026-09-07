@@ -5,7 +5,7 @@ from celery import Celery
 from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=True)
+load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=False)
 
 from src.rag_engine import ingest_document
 
@@ -23,5 +23,14 @@ celery_app = Celery(
 
 
 @celery_app.task(name="process_document_task")
-def process_document_task(file_path: str) -> dict:
-    return ingest_document(file_path)
+def process_document_task(
+    file_path: str,
+    workspace_id: str,
+    document_id: str,
+    source_file: str,
+) -> dict:
+    try:
+        return ingest_document(file_path, workspace_id, document_id, source_file)
+    except Exception:
+        Path(file_path).unlink(missing_ok=True)
+        raise

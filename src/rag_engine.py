@@ -2,9 +2,10 @@ import hashlib
 import json
 import os
 import uuid
+from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 import docx2txt
 import redis
@@ -31,6 +32,10 @@ REDIS_DB = int(os.getenv("REDIS_DB", "0"))
 CACHE_TTL_SECONDS = 3600
 FALLBACK_CACHE_TTL_SECONDS = 300
 TASK_WORKSPACE_TTL_SECONDS = 86400
+WORKSPACE_LOCK_TIMEOUT_SECONDS = int(os.getenv("WORKSPACE_LOCK_TIMEOUT_SECONDS", "600"))
+WORKSPACE_LOCK_BLOCKING_TIMEOUT_SECONDS = float(
+    os.getenv("WORKSPACE_LOCK_BLOCKING_TIMEOUT_SECONDS", "1")
+)
 
 TOP_K = int(os.getenv("RAG_TOP_K", "5"))
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
@@ -106,6 +111,25 @@ answer_prompt = PromptTemplate(
 )
 
 SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt"}
+
+
+class WorkspaceBusyError(RuntimeError):
+    pass
+
+
+@contextmanager
+def workspace_lock(workspace_id: str) -> Iterator[None]:
+    lock = redis_client.lock(
+        name=f"rag:workspace_lock:{workspace_id}",
+        timeout=WORKSPACE_LOCK_TIMEOUT_SECONDS,
+        blocking_timeout=WORKSPACE_LOCK_BLOCKING_TIMEOUT_SECONDS,
+    )
+    if not lock.acquire(blocking=True):
+        raise WorkspaceBusyError(f"Workspace is busy: {workspace_id}")
+    try:
+        yield
+    finally:
+        lock.release()
 
 
 class _PdfDocumentLoader:
@@ -338,55 +362,70 @@ def _invoke_llm(prompt: str) -> Any:
     return get_llm().invoke(prompt)
 
 
-def ingest_document(file_path: str) -> dict[str, Any]:
+def ingest_document(
+    file_path: str,
+    workspace_id: str,
+    document_id: str,
+    source_file: str,
+) -> dict[str, Any]:
     absolute_path = str(Path(file_path).resolve())
-    document_sections = _load_document_sections(absolute_path)
-    section_texts = [str(section.get("text", "")).strip() for section in document_sections]
-    document_text = "\n".join(text for text in section_texts if text).strip()
-    if not document_text:
-        raise ValueError(f"No extractable text found in document: {absolute_path}")
-
-    points_indexed = 0
-    for section in document_sections:
-        section_text = str(section.get("text", "")).strip()
-        if not section_text:
-            continue
-
-        chunks = text_splitter.split_text(section_text)
-        if not chunks:
-            continue
-
-        for chunk in chunks:
-            vector_batch = embeddings.embed_documents([chunk])
-            if not vector_batch:
-                raise ValueError(
-                    f"Embedding generation returned no vector for chunk {points_indexed}."
+    with workspace_lock(workspace_id):
+        document_sections = _load_document_sections(absolute_path)
+        chunk_records: list[dict[str, Any]] = []
+        for section in document_sections:
+            section_text = str(section.get("text", "")).strip()
+            if not section_text:
+                continue
+            for chunk in text_splitter.split_text(section_text):
+                chunk_records.append(
+                    {
+                        "text": chunk,
+                        "page_number": section.get("page_number"),
+                    }
                 )
 
-            vector = vector_batch[0]
-            if points_indexed == 0:
-                _ensure_collection(vector_size=len(vector))
+        if not chunk_records:
+            raise ValueError(f"No extractable text found in document: {source_file}")
 
-            point = models.PointStruct(
-                id=str(uuid.uuid4()),
+        chunks = [record["text"] for record in chunk_records]
+        vectors = get_embeddings().embed_documents(chunks)
+        if len(vectors) != len(chunks) or not vectors:
+            raise ValueError("Embedding generation returned an invalid vector batch.")
+
+        _ensure_collection(vector_size=len(vectors[0]))
+        points = [
+            models.PointStruct(
+                id=str(
+                    uuid.uuid5(
+                        uuid.NAMESPACE_URL,
+                        f"docuquery:{workspace_id}:{document_id}:{chunk_index}",
+                    )
+                ),
                 vector=vector,
                 payload={
-                    "text": chunk,
-                    "source": absolute_path,
-                    "chunk_index": points_indexed,
-                    "page_number": section.get("page_number"),
+                    "text": record["text"],
+                    "workspace_id": workspace_id,
+                    "document_id": document_id,
+                    "source_file": source_file,
+                    "chunk_index": chunk_index,
+                    "page_number": record["page_number"],
                 },
             )
-            qdrant_client.upsert(collection_name=COLLECTION_NAME, points=[point])
-            points_indexed += 1
-
-    if points_indexed == 0:
-        raise ValueError(f"Unable to create chunks from document: {absolute_path}")
+            for chunk_index, (record, vector) in enumerate(zip(chunk_records, vectors))
+        ]
+        qdrant_client.upsert(
+            collection_name=COLLECTION_NAME,
+            points=points,
+            wait=True,
+        )
+        corpus_version = advance_corpus_version(workspace_id)
 
     return {
         "status": "ingested",
-        "source": absolute_path,
-        "chunks_indexed": points_indexed,
+        "document_id": document_id,
+        "source_file": source_file,
+        "chunks_indexed": len(points),
+        "corpus_version": corpus_version,
     }
 
 
@@ -422,6 +461,14 @@ def ask_question(query_text: str, workspace_id: str) -> dict[str, Any]:
     search_response = qdrant_client.query_points(
         collection_name=COLLECTION_NAME,
         query=query_vector,
+        query_filter=models.Filter(
+            must=[
+                models.FieldCondition(
+                    key="workspace_id",
+                    match=models.MatchValue(value=workspace_id),
+                )
+            ]
+        ),
         limit=TOP_K,
         with_payload=True,
     )
