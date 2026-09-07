@@ -29,7 +29,7 @@ class QueryRequest(BaseModel):
 
 class ContextChunk(BaseModel):
     source_file: str
-    source_path: str
+    document_id: str
     chunk_index: int
     page_number: int | None = None
     text: str

@@ -161,6 +161,7 @@ def test_task_status_hidden_from_other_workspace(client, monkeypatch):
 
 
 def test_query_returns_cached_answer_on_cache_hit(client, monkeypatch):
+    monkeypatch.setattr(rag_engine, "get_corpus_version", lambda workspace_id: 0)
     monkeypatch.setattr(
         rag_engine.redis_client,
         "get",
@@ -170,7 +171,7 @@ def test_query_returns_cached_answer_on_cache_hit(client, monkeypatch):
                 "context": [
                     {
                         "source_file": "cached-file.pdf",
-                        "source_path": "E:/docs/cached-file.pdf",
+                        "document_id": "cached-document",
                         "chunk_index": 2,
                         "page_number": 3,
                         "text": "Cached context from Redis",
@@ -185,8 +186,8 @@ def test_query_returns_cached_answer_on_cache_hit(client, monkeypatch):
 
     monkeypatch.setattr(
         rag_engine,
-        "embeddings",
-        SimpleNamespace(embed_query=fail_if_called),
+        "get_embeddings",
+        lambda: SimpleNamespace(embed_query=fail_if_called),
     )
     monkeypatch.setattr(
         rag_engine,
@@ -208,7 +209,7 @@ def test_query_returns_cached_answer_on_cache_hit(client, monkeypatch):
         "context": [
             {
                 "source_file": "cached-file.pdf",
-                "source_path": "E:/docs/cached-file.pdf",
+                "document_id": "cached-document",
                 "chunk_index": 2,
                 "page_number": 3,
                 "text": "Cached context from Redis",
@@ -223,12 +224,16 @@ def test_query_returns_context_and_fresh_answer_on_cache_miss(client, monkeypatc
         {
             "text": "Chunk A from Qdrant",
             "source": "E:/docs/file-two.pdf",
+            "source_file": "file-two.pdf",
+            "document_id": "file-two-document",
             "chunk_index": 0,
             "page_number": 7,
         },
         {
             "text": "Chunk B from Qdrant",
             "source": "E:/docs/file-two.pdf",
+            "source_file": "file-two.pdf",
+            "document_id": "file-two-document",
             "chunk_index": 1,
             "page_number": 8,
         },
@@ -252,8 +257,8 @@ def test_query_returns_context_and_fresh_answer_on_cache_miss(client, monkeypatc
     )
     monkeypatch.setattr(
         rag_engine,
-        "embeddings",
-        SimpleNamespace(embed_query=lambda query: [0.1, 0.2, 0.3]),
+        "get_embeddings",
+        lambda: SimpleNamespace(embed_query=lambda query: [0.1, 0.2, 0.3]),
     )
     monkeypatch.setattr(
         rag_engine,
@@ -275,14 +280,14 @@ def test_query_returns_context_and_fresh_answer_on_cache_miss(client, monkeypatc
         "context": [
             {
                 "source_file": "file-two.pdf",
-                "source_path": "E:/docs/file-two.pdf",
+                "document_id": "file-two-document",
                 "chunk_index": 0,
                 "page_number": 7,
                 "text": "Chunk A from Qdrant",
             },
             {
                 "source_file": "file-two.pdf",
-                "source_path": "E:/docs/file-two.pdf",
+                "document_id": "file-two-document",
                 "chunk_index": 1,
                 "page_number": 8,
                 "text": "Chunk B from Qdrant",
@@ -295,14 +300,14 @@ def test_query_returns_context_and_fresh_answer_on_cache_miss(client, monkeypatc
         "context": [
             {
                 "source_file": "file-two.pdf",
-                "source_path": "E:/docs/file-two.pdf",
+                "document_id": "file-two-document",
                 "chunk_index": 0,
                 "page_number": 7,
                 "text": "Chunk A from Qdrant",
             },
             {
                 "source_file": "file-two.pdf",
-                "source_path": "E:/docs/file-two.pdf",
+                "document_id": "file-two-document",
                 "chunk_index": 1,
                 "page_number": 8,
                 "text": "Chunk B from Qdrant",

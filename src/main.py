@@ -167,7 +167,7 @@ def list_documents(context: RequestContextDep) -> dict:
 @app.post("/api/v1/query", response_model=QueryResponse)
 def query_documents(payload: QueryRequest, context: RequestContextDep) -> QueryResponse:
     try:
-        result = ask_question(payload.query)
+        result = ask_question(payload.query, context.workspace_id)
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Query processing failed: {exc}") from exc
     return QueryResponse(

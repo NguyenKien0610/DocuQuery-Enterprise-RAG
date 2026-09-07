@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import uuid
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -50,12 +51,18 @@ redis_client = redis.Redis(
     decode_responses=True,
 )
 
-embeddings = HuggingFaceEmbeddings(model_name=LOCAL_EMBEDDING_MODEL)
-llm = ChatGoogleGenerativeAI(
-    model=GEMINI_CHAT_MODEL,
-    api_key=GOOGLE_API_KEY,
-    retries=0,
-)
+@lru_cache(maxsize=1)
+def get_embeddings() -> HuggingFaceEmbeddings:
+    return HuggingFaceEmbeddings(model_name=LOCAL_EMBEDDING_MODEL)
+
+
+@lru_cache(maxsize=1)
+def get_llm() -> ChatGoogleGenerativeAI:
+    return ChatGoogleGenerativeAI(
+        model=GEMINI_CHAT_MODEL,
+        api_key=GOOGLE_API_KEY,
+        retries=0,
+    )
 
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=CHUNK_SIZE,
@@ -178,7 +185,7 @@ def ensure_qdrant_collection() -> None:
     if _collection_exists():
         return
 
-    probe_vector = embeddings.embed_query("qdrant_collection_init")
+    probe_vector = get_embeddings().embed_query("qdrant_collection_init")
     _ensure_collection(vector_size=len(probe_vector))
 
 
@@ -200,10 +207,19 @@ def reset_workspace() -> dict[str, Any]:
     }
 
 
-def _cache_key(query_text: str) -> str:
+def get_corpus_version(workspace_id: str) -> int:
+    stored_version = redis_client.get(f"rag:corpus_version:{workspace_id}")
+    return int(stored_version) if stored_version is not None else 0
+
+
+def advance_corpus_version(workspace_id: str) -> int:
+    return int(redis_client.incr(f"rag:corpus_version:{workspace_id}"))
+
+
+def _cache_key(query_text: str, workspace_id: str, corpus_version: int) -> str:
     normalized = query_text.strip().lower()
     digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
-    return f"rag:answer:{digest}"
+    return f"rag:answer:{workspace_id}:{corpus_version}:{digest}"
 
 
 def _response_text(content: Any) -> str:
@@ -229,7 +245,10 @@ def _serialize_context_chunk(result: Any) -> dict[str, Any] | None:
         return None
 
     source_path = str(payload.get("source", "")).strip()
-    source_file = Path(source_path).name if source_path else "Unknown source"
+    source_file = str(payload.get("source_file", "")).strip()
+    if not source_file:
+        source_file = Path(source_path).name if source_path else "Unknown source"
+    document_id = str(payload.get("document_id", "")).strip()
     chunk_index = int(payload.get("chunk_index", -1))
     page_number = payload.get("page_number")
     if page_number is not None:
@@ -240,7 +259,7 @@ def _serialize_context_chunk(result: Any) -> dict[str, Any] | None:
 
     return {
         "source_file": source_file,
-        "source_path": source_path,
+        "document_id": document_id,
         "chunk_index": chunk_index,
         "page_number": page_number,
         "text": text,
@@ -262,7 +281,7 @@ def _deserialize_cached_context(cache_value: str) -> tuple[str, list[dict[str, A
     return answer, context_items
 
 
-def _fallback_answer(query_text: str, context_chunks: list[str], error: Exception) -> str:
+def _fallback_answer(query_text: str, context_chunks: list[str]) -> str:
     if context_chunks:
         context_preview = "\n\n".join(context_chunks[:2])
         return (
@@ -274,7 +293,7 @@ def _fallback_answer(query_text: str, context_chunks: list[str], error: Exceptio
 
     return (
         "Gemini is temporarily unavailable and no relevant document context was found for "
-        f"the question: {query_text}. Error: {error}"
+        f"the question: {query_text}."
     )
 
 
@@ -316,7 +335,7 @@ def _should_retry_llm_error(error: Exception) -> bool:
     reraise=True,
 )
 def _invoke_llm(prompt: str) -> Any:
-    return llm.invoke(prompt)
+    return get_llm().invoke(prompt)
 
 
 def ingest_document(file_path: str) -> dict[str, Any]:
@@ -371,8 +390,9 @@ def ingest_document(file_path: str) -> dict[str, Any]:
     }
 
 
-def ask_question(query_text: str) -> dict[str, Any]:
-    key = _cache_key(query_text)
+def ask_question(query_text: str, workspace_id: str) -> dict[str, Any]:
+    corpus_version = get_corpus_version(workspace_id)
+    key = _cache_key(query_text, workspace_id, corpus_version)
     cached_payload = redis_client.get(key)
     if cached_payload:
         cached_answer, cached_context = _deserialize_cached_context(cached_payload)
@@ -384,9 +404,9 @@ def ask_question(query_text: str) -> dict[str, Any]:
         }
 
     try:
-        query_vector = embeddings.embed_query(query_text)
+        query_vector = get_embeddings().embed_query(query_text)
     except Exception as exc:
-        answer = _fallback_answer(query_text, [], exc)
+        answer = _fallback_answer(query_text, [])
         redis_client.setex(
             key,
             FALLBACK_CACHE_TTL_SECONDS,
@@ -421,7 +441,7 @@ def ask_question(query_text: str) -> dict[str, Any]:
         response = _invoke_llm(prompt)
         answer = _response_text(response.content).strip()
     except Exception as exc:
-        answer = _fallback_answer(query_text, context_chunks, exc)
+        answer = _fallback_answer(query_text, context_chunks)
         redis_client.setex(
             key,
             FALLBACK_CACHE_TTL_SECONDS,
