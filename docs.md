@@ -1,40 +1,38 @@
-# Project: DocuQuery v2.0 - Enterprise RAG API with Async Processing & Semantic Cache
+# DocuQuery Architecture Notes
 
-## 1. Objective
-Upgrade the DocuQuery system into a highly scalable, distributed RAG (Retrieval-Augmented Generation) backend. The system handles large PDF uploads asynchronously using Celery and Redis. It uses Qdrant as a persistent Vector Database and implements Semantic Caching to reduce LLM API calls and latency.
+The current implementation is a workspace-scoped RAG prototype. `README.md` is the operator guide; this document records the main design boundaries.
 
-## 2. Tech Stack
-* **Framework:** FastAPI, Uvicorn
-* **AI & RAG:** LangChain, Google Gemini API (langchain-google-genai for Embeddings & Chat)
-* **Vector Database:** Qdrant (via Docker)
-* **Async Task Queue:** Celery
-* **Message Broker & Cache:** Redis (via Docker)
-* **Testing:** Pytest
+## Ingestion
 
-## 3. System Architecture & Flow
-### Flow 1: Async Document Ingestion
-1. Client calls `POST /api/v1/documents/upload` with a PDF file.
-2. FastAPI saves the file temporarily and dispatches a Celery task `process_document_task`. API immediately returns a `task_id`.
-3. Celery Worker picks up the task, extracts text, chunks it, generates Google Gemini embeddings (`GoogleGenerativeAIEmbeddings`), and upserts into Qdrant.
+1. FastAPI authenticates `X-API-Key` and validates `X-Workspace-ID`.
+2. The upload is streamed to `uploads/<workspace>/`, hashed, size-limited, and validated by content.
+3. The API records task ownership in Redis and dispatches a Celery task.
+4. The worker acquires the workspace lock, extracts text, chunks it, creates local embeddings in one batch, and upserts deterministic point IDs into Qdrant.
+5. Only after Qdrant accepts the batch does Redis increment the workspace corpus version.
+6. A failed worker removes its exact uploaded file.
 
-### Flow 2: Querying with Semantic Cache
-1. Client calls `POST /api/v1/query` with a question.
-2. FastAPI hashes/embeds the query and checks the Redis Semantic Cache.
-3. **Cache Hit:** Returns the cached answer immediately.
-4. **Cache Miss:** Retrieve context from Qdrant -> Call Gemini LLM (`ChatGoogleGenerativeAI`) -> Cache in Redis -> Return answer.
+## Query
 
-## 4. API Endpoints
-* `POST /api/v1/documents/upload` (multipart) -> `{"task_id": "uuid"}`
-* `GET /api/v1/documents/status/{task_id}` -> Task status
-* `POST /api/v1/query` (JSON) -> `{"query": "...", "answer": "...", "cached": true/false}`
+1. FastAPI authenticates and validates the request context.
+2. Redis supplies the current workspace corpus version.
+3. An exact normalized-query key is checked for that workspace and version.
+4. On a miss, the query is embedded locally and Qdrant dense search is filtered by workspace.
+5. Retrieved text is passed to Gemini for answer generation.
+6. The answer and safe citation metadata are cached with a TTL.
 
-## 5. Directory Structure
-/docuquery-v2
-  ├── src/
-  │   ├── main.py            # FastAPI application & endpoints
-  │   ├── worker.py          # Celery app and background tasks (PDF processing)
-  │   ├── rag_engine.py      # LangChain logic, Qdrant setup, and Semantic Cache implementation
-  │   └── schemas.py         # Pydantic models
-  ├── docker-compose.yml     # Orchestrates Redis and Qdrant
-  ├── requirements.txt
-  └── .env                   # Stores OPENAI_API_KEY
+## Reset
+
+Reset and ingestion use the same Redis workspace lock. Reset deletes only the selected workspace's files and Qdrant points, then advances that workspace's corpus version. It does not delete the shared collection.
+
+## Security model
+
+The static API key protects the demo from anonymous access. Workspace scoping prevents accidental data mixing across normal flows, but it is not user authorization: any holder of the shared key can submit another valid workspace ID.
+
+The API never returns absolute source paths or raw infrastructure exceptions. File handling rejects empty, oversized, extension-spoofed, structurally invalid DOCX, invalid PDF signatures, and non-UTF-8 text.
+
+## Deferred work
+
+- User identity, roles, organization membership, and per-workspace authorization.
+- Sparse retrieval, reranking, score thresholds, and retrieval-quality evaluation.
+- OCR, malware scanning, rate limiting, object storage, and document metadata persistence.
+- Full-service containers, durable volumes, health probes, metrics, tracing, and concurrent load tests.

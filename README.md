@@ -1,92 +1,97 @@
-# DocuQuery Enterprise RAG
+# DocuQuery — Workspace-Scoped RAG
 
-DocuQuery Enterprise RAG is a document question-answering system built around FastAPI, Celery, Redis, Qdrant, and Streamlit.
+DocuQuery is a CV-oriented document question-answering prototype built with FastAPI, Celery, Redis, Qdrant, local sentence-transformer embeddings, Gemini, and Streamlit.
 
-The current architecture uses hybrid retrieval:
-- Local embeddings with `sentence-transformers` through `langchain-huggingface`
-- Gemini chat generation through `langchain-google-genai`
-- Redis semantic cache for repeated questions
-- Qdrant as the persistent vector database
-- Celery for asynchronous document ingestion (`.pdf`, `.docx`, `.txt`)
+It demonstrates asynchronous ingestion, dense vector retrieval, page-aware citations, exact-query response caching, workspace isolation, and defensive upload handling. It is not presented as a production multi-tenant platform; the security boundary and remaining limitations are documented below.
+
+## What it demonstrates
+
+- Asynchronous PDF, DOCX, and UTF-8 TXT ingestion through Celery.
+- Local `all-MiniLM-L6-v2` embeddings, so indexing does not consume Gemini quota.
+- Dense similarity search in Qdrant with workspace filters.
+- Gemini answer generation using retrieved document context.
+- Exact-query Redis caching keyed by workspace and corpus version.
+- Automatic cache invalidation after successful ingestion or reset.
+- Deterministic vector IDs derived from workspace, document content, and chunk index.
+- Source citations with safe filename, document ID, chunk index, and PDF page number.
+- Upload size, signature, structure, UTF-8, and DOCX expansion checks.
+- API-key protection and logical workspace isolation.
 
 ## Architecture
 
-### System Architecture Diagram
-
 ```mermaid
 sequenceDiagram
-    participant U as Streamlit (Frontend)
-    participant API as FastAPI (Backend)
-    participant C as Celery Worker
-    participant R as Redis (Cache & Broker)
-    participant Q as Qdrant (Vector DB)
-    participant LLM as Gemini 2.5 Flash
+    participant UI as Streamlit
+    participant API as FastAPI
+    participant R as Redis
+    participant W as Celery Worker
+    participant Q as Qdrant
+    participant L as Gemini
 
-    Note over U,LLM: 1. Ingestion Flow (Local / Zero API Cost)
-    U->>API: Upload document
-    API->>R: Send Task to Message Broker
-    R->>C: Consume Task
-    C->>C: Chunk Text & HuggingFace Local Embeddings
-    C->>Q: Upsert Vectors (dim: 384)
-    
-    Note over U,LLM: 2. Query Flow (Hybrid RAG)
-    U->>API: Send Question
-    API->>R: Check Semantic Cache
-    alt Cache Hit
-        R-->>API: Return cached answer
-        API-->>U: Fast Response (⚡ Cached)
-    else Cache Miss
-        API->>Q: Retrieve nearest chunks
-        Q-->>API: Return Context
-        API->>LLM: Send Prompt (Context + Question)
-        LLM-->>API: Return Generated Answer
-        API->>R: Save to Cache (TTL)
-        API-->>U: Return Final Answer
+    UI->>API: Upload + API key + workspace
+    API->>API: Stream, validate, hash
+    API->>R: Record task ownership
+    API->>R: Enqueue task
+    R->>W: Deliver task
+    W->>R: Acquire workspace lock
+    W->>W: Parse, chunk, embed batch
+    W->>Q: Upsert deterministic points
+    W->>R: Increment corpus version
+    W->>R: Release lock
+
+    UI->>API: Query + API key + workspace
+    API->>R: Read corpus version and exact-query cache
+    alt Cache hit
+        R-->>API: Cached answer and citations
+    else Cache miss
+        API->>Q: Dense search filtered by workspace
+        Q-->>API: Relevant chunks
+        API->>L: Context + question
+        L-->>API: Answer
+        API->>R: Cache answer under current corpus version
     end
+    API-->>UI: Answer and safe citations
 ```
 
-### Ingestion flow
-1. A client uploads a document (`.pdf`, `.docx`, or `.txt`) to `POST /api/v1/documents/upload`.
-2. FastAPI stores the file in `uploads/` and sends a Celery task.
-3. The Celery worker selects the proper loader based on file extension, extracts text, chunks it, creates local embeddings, and upserts vectors into Qdrant.
-4. For PDF files, page metadata is preserved so citations can show the source page later.
+### Cache correctness
 
-### Query flow
-1. A client sends a question to `POST /api/v1/query`.
-2. The backend checks Redis for a cached answer.
-3. On cache miss, it embeds the query locally, retrieves the nearest chunks from Qdrant, formats a prompt, and sends the prompt to Gemini.
-4. The final answer and structured citation context are cached in Redis and returned to the client.
+Answers use this logical Redis key:
 
-## Tech Stack
+```text
+rag:answer:<workspace_id>:<corpus_version>:<sha256(normalized_query)>
+```
 
-- Backend API: FastAPI, Uvicorn
-- Async worker: Celery
-- Broker and cache: Redis
-- Vector database: Qdrant
-- Retrieval and prompting: LangChain
-- Local embeddings: `all-MiniLM-L6-v2`
-- LLM: Gemini via `langchain-google-genai`
-- Frontend: Streamlit
-- Testing: Pytest, FastAPI `TestClient`, `httpx`
+Successful ingestion and reset increment `rag:corpus_version:<workspace_id>`. Old answers expire through TTL but become unreachable immediately, preventing a repeated question from returning an answer for an earlier document set.
 
-## Project Structure
+## Security boundary
+
+Every `/api/v1` request requires:
+
+```http
+X-API-Key: <DOCUQUERY_API_KEY>
+X-Workspace-ID: <workspace-id>
+```
+
+The API key is compared in constant time and the service fails closed when no server key is configured. Workspace IDs are validated slugs and scope files, vectors, cache entries, tasks, queries, and reset operations.
+
+This is logical isolation for a controlled demo. All clients share one API key, so a holder of that key can choose another valid workspace ID. JWT/OAuth, users, roles, organization membership, malware scanning, rate limiting, and cryptographic tenant isolation are outside the current scope.
+
+## Project structure
 
 ```text
 DocuQuery-Enterprise-RAG/
-├── frontend/
-│   └── app.py
+├── frontend/app.py
+├── scripts/benchmark_docuquery.py
 ├── src/
 │   ├── main.py
 │   ├── rag_engine.py
 │   ├── schemas.py
+│   ├── security.py
+│   ├── uploads.py
 │   └── worker.py
 ├── tests/
-│   └── test_api.py
-├── uploads/
 ├── .env.example
 ├── docker-compose.yml
-├── docs.md
-├── README.md
 └── requirements.txt
 ```
 
@@ -94,262 +99,177 @@ DocuQuery-Enterprise-RAG/
 
 - Python 3.10+
 - Docker Desktop or Docker Engine
-- A valid `GOOGLE_API_KEY`
+- A Gemini API key
 
-## Environment Setup
+## Setup
 
-Create a `.env` file in the project root:
-
-```env
-GOOGLE_API_KEY=your_gemini_key_here
-```
-
-Optional variables:
-
-```env
-QDRANT_HOST=localhost
-QDRANT_PORT=6333
-QDRANT_COLLECTION=docuquery_hybrid_v1
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_DB=0
-UPLOAD_DIR=uploads
-RAG_TOP_K=5
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=150
-LOCAL_EMBEDDING_MODEL=all-MiniLM-L6-v2
-GEMINI_CHAT_MODEL=models/gemini-2.5-flash
-```
-
-## Installation
-
-Install Python dependencies:
+Create and activate a virtual environment, then install dependencies:
 
 ```bash
+python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Start infrastructure services:
+Copy `.env.example` to `.env` and set at least:
+
+```env
+GOOGLE_API_KEY=your_gemini_key_here
+DOCUQUERY_API_KEY=replace_with_a_long_random_value
+DOCUQUERY_WORKSPACE_ID=default
+```
+
+Generate a long random API key rather than using the example value.
+
+Start Redis and Qdrant:
 
 ```bash
 docker compose up -d
 ```
 
-## Run the Backend
-
-Start the FastAPI server:
+Start the API:
 
 ```bash
 uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Start the Celery worker in another terminal:
+Start the worker in another terminal:
 
 ```bash
 celery -A src.worker.celery_app worker --loglevel=info --pool=solo
 ```
 
-`--pool=solo` is the safest default on Windows.
+`--pool=solo` is the safest Windows development default.
 
-## Run the Frontend
-
-Start Streamlit:
+Start the frontend:
 
 ```bash
 streamlit run frontend/app.py
 ```
 
-Frontend URL:
+The frontend reads `DOCUQUERY_API_BASE_URL`, `DOCUQUERY_API_KEY`, and `DOCUQUERY_WORKSPACE_ID` from the environment.
 
-```text
-http://localhost:8501
+## API
+
+The examples assume:
+
+```bash
+API_KEY=replace_with_a_long_random_value
+WORKSPACE=default
 ```
 
-Backend URL:
+### Upload
 
-```text
-http://localhost:8000
+```bash
+curl -X POST http://localhost:8000/api/v1/documents/upload \
+  -H "X-API-Key: $API_KEY" \
+  -H "X-Workspace-ID: $WORKSPACE" \
+  -F "file=@report.pdf"
 ```
-
-## API Endpoints
-
-### Upload document
-
-```http
-POST /api/v1/documents/upload
-Content-Type: multipart/form-data
-```
-
-Supported file types:
-- `.pdf`
-- `.docx`
-- `.txt`
-
-Response:
 
 ```json
 {
-  "task_id": "uuid"
+  "task_id": "e7b6d87c-f384-478d-b314-14e1db174718",
+  "document_id": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
 }
 ```
 
-### Check ingestion status
+Default limits are 25 MiB uploaded and 100 MiB declared uncompressed DOCX content. PDFs require a PDF signature, DOCX files require the expected ZIP members, and text files must contain non-whitespace UTF-8 text.
 
-```http
-GET /api/v1/documents/status/{task_id}
+### Task status
+
+```bash
+curl http://localhost:8000/api/v1/documents/status/<task-id> \
+  -H "X-API-Key: $API_KEY" \
+  -H "X-Workspace-ID: $WORKSPACE"
 ```
 
-Response:
+A task ID is visible only from the workspace that created it. Worker failures return a generic message without internal paths or exception details.
+
+### List documents
+
+```bash
+curl http://localhost:8000/api/v1/documents \
+  -H "X-API-Key: $API_KEY" \
+  -H "X-Workspace-ID: $WORKSPACE"
+```
+
+### Query
+
+```bash
+curl -X POST http://localhost:8000/api/v1/query \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $API_KEY" \
+  -H "X-Workspace-ID: $WORKSPACE" \
+  -d '{"query":"Summarize the document"}'
+```
 
 ```json
 {
-  "task_id": "uuid",
-  "status": "SUCCESS",
-  "result": {
-    "status": "ingested",
-    "source": "path-to-file",
-    "chunks_indexed": 42
-  },
-  "error": null
-}
-```
-
-### List uploaded documents
-
-```http
-GET /api/v1/documents
-```
-
-Response:
-
-```json
-{
-  "documents": [
-    "0d2b4c8a-1c95-4d4d-a13f-123456789abc_sample.pdf",
-    "4f949d45-7840-4178-b13e-abcdef123456_notes.docx"
-  ]
-}
-```
-
-### Query documents
-
-```http
-POST /api/v1/query
-Content-Type: application/json
-```
-
-Request:
-
-```json
-{
-  "query": "Summarize this document"
-}
-```
-
-Response:
-
-```json
-{
-  "query": "Summarize this document",
+  "query": "Summarize the document",
   "answer": "...",
   "cached": false,
   "context": [
     {
-      "source_file": "0d2b4c8a-1c95-4d4d-a13f-123456789abc_sample.pdf",
-      "source_path": "E:/Project/DocuQuery-Enterprise-RAG/uploads/0d2b4c8a-1c95-4d4d-a13f-123456789abc_sample.pdf",
-      "chunk_index": 6,
-      "page_number": 12,
-      "text": "Relevant excerpt from the document..."
+      "source_file": "report.pdf",
+      "document_id": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+      "chunk_index": 0,
+      "page_number": 1,
+      "text": "Relevant excerpt..."
     }
   ]
 }
 ```
 
-### Reset workspace
+No absolute server path is returned.
 
-```http
-DELETE /api/v1/workspace/reset
+### Reset one workspace
+
+```bash
+curl -X DELETE http://localhost:8000/api/v1/workspace/reset \
+  -H "X-API-Key: $API_KEY" \
+  -H "X-Workspace-ID: $WORKSPACE"
 ```
 
-This endpoint:
-- deletes the active Qdrant collection
-- recreates an empty collection
-- clears only DocuQuery cache keys from Redis
-- removes uploaded files from `uploads/`
-
-Response:
-
-```json
-{
-  "status": "workspace_reset",
-  "collection": "docuquery_hybrid_v1",
-  "cache_cleared": true,
-  "cache_keys_deleted": 3,
-  "vector_store_cleared": true,
-  "deleted_files": 2
-}
-```
-
-## Frontend Features
-
-- Automatic upload from the sidebar for `.pdf`, `.docx`, and `.txt`
-- Task polling with progress UI while Celery is still processing
-- Chat-style interface with `st.chat_message`
-- Simulated streaming output with `st.write_stream()`
-- Persistent session chat history
-- Visual `⚡ Cached` marker for Redis cache hits
-- Source citation view grouped by file, with chunk number and PDF page number when available
-- Workspace reset button that also clears chat history and uploaded files
-- Backend connection error handling for upload, polling, query, and reset flows
+Reset shares a Redis lock with ingestion and deletes only that workspace's uploaded files and Qdrant points.
 
 ## Testing
 
-Run the API test suite:
+Unit/API tests mock external service boundaries and do not require live Redis, Qdrant, Gemini, or Hugging Face downloads:
 
 ```bash
-pytest tests/ -v
+pytest tests -q
 ```
 
-Current automated coverage includes:
-- Black-box upload validation for valid, empty, and invalid file inputs
-- White-box branch coverage for query cache hit and cache miss paths
+The suite covers authentication, workspace validation, upload safety and cleanup, task ownership, cache versioning, lazy model construction, deterministic vector IDs, filtered retrieval, worker cleanup, reset isolation, and safe error responses.
 
-## Notes
+## Benchmark
 
-- Upload and indexing do not consume Gemini quota because embeddings are local.
-- Detailed questions can take longer because Gemini is only used during answer generation.
-- Qdrant uses a separate collection name, `docuquery_hybrid_v1`, to avoid vector dimension conflicts with older embedding strategies.
-- Redis cache stores both the generated answer and structured citation context.
-- File names are stored with a UUID prefix on disk to avoid collisions; the frontend strips that prefix for display.
+With the API and worker running:
 
-## Troubleshooting
-
-### `FAILURE` in task status after upload
-
-Check:
-- Redis is running on port `6379`
-- Qdrant is running on port `6333`
-- The Celery worker is running
-
-### `404 NOT_FOUND` from Gemini
-
-Set `GEMINI_CHAT_MODEL` in `.env` to a model available in your Gemini project, for example:
-
-```env
-GEMINI_CHAT_MODEL=models/gemini-2.5-flash
+```bash
+python scripts/benchmark_docuquery.py \
+  --file path/to/document.pdf \
+  --query "Summarize the document" \
+  --api-key "$API_KEY" \
+  --workspace-id "$WORKSPACE" \
+  --reset
 ```
 
-### Upload seems stuck in Streamlit
+The script measures ingestion latency, first-query latency, repeated exact-query cache latency, and speedup. It is a local latency benchmark, not a retrieval-quality or concurrent-load evaluation.
 
-The frontend polls Celery status for up to `300` seconds. If processing exceeds that window:
-- confirm the Celery worker is running
-- inspect worker logs for loader or embedding errors
-- retry after the worker finishes, or upload a smaller document
+## Upgrade note
 
-### Streamlit times out on long answers
+Vectors created before workspace metadata was introduced are intentionally invisible to filtered retrieval. After upgrading, restart the API and worker, then re-ingest documents into the desired workspace. Existing root-level upload files can be removed manually after confirming they are no longer needed.
 
-The frontend already waits up to `120` seconds. If needed, increase the timeout in [frontend/app.py](./frontend/app.py).
+## Current limitations
+
+- Shared static API key instead of user/role authorization.
+- Dense retrieval without sparse search or reranking.
+- Text-only PDF extraction; scanned documents need OCR before upload.
+- No document metadata database or per-document deletion endpoint.
+- Redis and Qdrant are the only services in Compose; API, worker, and frontend run locally.
+- No declared persistent Docker volume, production monitoring, distributed tracing, or load-test guarantee.
 
 ## License
 
-This project is licensed under the terms of the [LICENSE](./LICENSE) file.
+Licensed under the terms of [LICENSE](./LICENSE).

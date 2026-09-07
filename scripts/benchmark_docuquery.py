@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import statistics
 import sys
 import time
@@ -9,8 +10,21 @@ from typing import Any
 import requests
 
 
-def _request_json(method: str, url: str, **kwargs: Any) -> dict[str, Any]:
-    response = requests.request(method, url, **kwargs)
+def _request_json(
+    method: str,
+    url: str,
+    *,
+    api_key: str,
+    workspace_id: str,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    supplied_headers = kwargs.pop("headers", {})
+    headers = {
+        **supplied_headers,
+        "X-API-Key": api_key,
+        "X-Workspace-ID": workspace_id,
+    }
+    response = requests.request(method, url, headers=headers, **kwargs)
     response.raise_for_status()
     payload = response.json()
     if not isinstance(payload, dict):
@@ -26,8 +40,19 @@ def _percentile(values: list[float], percentile: float) -> float:
     return ordered[index]
 
 
-def reset_workspace(base_url: str, timeout: int) -> dict[str, Any]:
-    return _request_json("DELETE", f"{base_url}/api/v1/workspace/reset", timeout=timeout)
+def reset_workspace(
+    base_url: str,
+    timeout: int,
+    api_key: str,
+    workspace_id: str,
+) -> dict[str, Any]:
+    return _request_json(
+        "DELETE",
+        f"{base_url}/api/v1/workspace/reset",
+        api_key=api_key,
+        workspace_id=workspace_id,
+        timeout=timeout,
+    )
 
 
 def upload_and_wait(
@@ -36,6 +61,8 @@ def upload_and_wait(
     timeout: int,
     poll_interval: float,
     max_wait: int,
+    api_key: str,
+    workspace_id: str,
 ) -> dict[str, Any]:
     content_type = {
         ".pdf": "application/pdf",
@@ -48,6 +75,8 @@ def upload_and_wait(
         upload_payload = _request_json(
             "POST",
             f"{base_url}/api/v1/documents/upload",
+            api_key=api_key,
+            workspace_id=workspace_id,
             files={"file": (document_path.name, file_obj, content_type)},
             timeout=timeout,
         )
@@ -62,6 +91,8 @@ def upload_and_wait(
         status_payload = _request_json(
             "GET",
             f"{base_url}/api/v1/documents/status/{task_id}",
+            api_key=api_key,
+            workspace_id=workspace_id,
             timeout=timeout,
         )
         poll_count += 1
@@ -85,11 +116,19 @@ def upload_and_wait(
         time.sleep(poll_interval)
 
 
-def run_query(base_url: str, query: str, timeout: int) -> dict[str, Any]:
+def run_query(
+    base_url: str,
+    query: str,
+    timeout: int,
+    api_key: str,
+    workspace_id: str,
+) -> dict[str, Any]:
     started_at = time.perf_counter()
     payload = _request_json(
         "POST",
         f"{base_url}/api/v1/query",
+        api_key=api_key,
+        workspace_id=workspace_id,
         json={"query": query},
         timeout=timeout,
     )
@@ -108,17 +147,38 @@ def benchmark(args: argparse.Namespace) -> dict[str, Any]:
     if not document_path.exists():
         raise FileNotFoundError(document_path)
 
-    reset_payload = reset_workspace(base_url, args.timeout) if args.reset else None
+    reset_payload = (
+        reset_workspace(base_url, args.timeout, args.api_key, args.workspace_id)
+        if args.reset
+        else None
+    )
     ingestion = upload_and_wait(
         base_url=base_url,
         document_path=document_path,
         timeout=args.timeout,
         poll_interval=args.poll_interval,
         max_wait=args.max_wait,
+        api_key=args.api_key,
+        workspace_id=args.workspace_id,
     )
 
-    cache_miss = run_query(base_url, args.query, args.timeout)
-    cache_hits = [run_query(base_url, args.query, args.timeout) for _ in range(args.cache_hit_runs)]
+    cache_miss = run_query(
+        base_url,
+        args.query,
+        args.timeout,
+        args.api_key,
+        args.workspace_id,
+    )
+    cache_hits = [
+        run_query(
+            base_url,
+            args.query,
+            args.timeout,
+            args.api_key,
+            args.workspace_id,
+        )
+        for _ in range(args.cache_hit_runs)
+    ]
     hit_latencies = [item["elapsed_seconds"] for item in cache_hits]
 
     return {
@@ -147,7 +207,15 @@ def benchmark(args: argparse.Namespace) -> dict[str, Any]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Benchmark DocuQuery upload and query flows.")
-    parser.add_argument("--base-url", default="http://localhost:8000")
+    parser.add_argument(
+        "--base-url",
+        default=os.getenv("DOCUQUERY_API_BASE_URL", "http://localhost:8000"),
+    )
+    parser.add_argument("--api-key", default=os.getenv("DOCUQUERY_API_KEY"))
+    parser.add_argument(
+        "--workspace-id",
+        default=os.getenv("DOCUQUERY_WORKSPACE_ID", "default"),
+    )
     parser.add_argument("--file", required=True, help="Document file to upload for benchmarking.")
     parser.add_argument("--query", required=True, help="Question to benchmark.")
     parser.add_argument("--output", default="benchmark_results.json")
@@ -157,6 +225,8 @@ def main() -> None:
     parser.add_argument("--cache-hit-runs", type=int, default=5)
     parser.add_argument("--reset", action="store_true", help="Reset workspace before benchmarking.")
     args = parser.parse_args()
+    if not args.api_key:
+        parser.error("--api-key or DOCUQUERY_API_KEY is required")
 
     results = benchmark(args)
     output_path = Path(args.output)

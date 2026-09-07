@@ -1,11 +1,12 @@
 import hashlib
+import os
 import re
 import time
 
 import requests
 import streamlit as st
 
-API_BASE_URL = "http://localhost:8000"
+API_BASE_URL = os.getenv("DOCUQUERY_API_BASE_URL", "http://localhost:8000").rstrip("/")
 UPLOAD_ENDPOINT = f"{API_BASE_URL}/api/v1/documents/upload"
 DOCUMENTS_ENDPOINT = f"{API_BASE_URL}/api/v1/documents"
 STATUS_ENDPOINT_TEMPLATE = f"{API_BASE_URL}/api/v1/documents/status" + "/{task_id}"
@@ -15,6 +16,19 @@ REQUEST_TIMEOUT = 120
 STREAM_DELAY_SECONDS = 0.03
 TASK_POLL_INTERVAL_SECONDS = 2
 TASK_POLL_TIMEOUT_SECONDS = 300
+
+
+def _api_headers() -> dict[str, str]:
+    return {
+        "X-API-Key": os.getenv("DOCUQUERY_API_KEY", ""),
+        "X-Workspace-ID": os.getenv("DOCUQUERY_WORKSPACE_ID", "default"),
+    }
+
+
+def _request(method: str, url: str, **kwargs):
+    supplied_headers = kwargs.pop("headers", {})
+    headers = {**supplied_headers, **_api_headers()}
+    return requests.request(method, url, headers=headers, **kwargs)
 
 
 def init_session_state() -> None:
@@ -40,7 +54,8 @@ def start_upload(uploaded_file) -> str | None:
     file_content_type = uploaded_file.type or "application/octet-stream"
     files = {"file": (uploaded_file.name, uploaded_file.getvalue(), file_content_type)}
     try:
-        response = requests.post(
+        response = _request(
+            "POST",
             UPLOAD_ENDPOINT,
             files=files,
             timeout=REQUEST_TIMEOUT,
@@ -80,7 +95,8 @@ def poll_upload_task(task_id: str) -> bool:
                     )
                     return False
 
-                status_response = requests.get(
+                status_response = _request(
+                    "GET",
                     STATUS_ENDPOINT_TEMPLATE.format(task_id=task_id),
                     timeout=REQUEST_TIMEOUT,
                 )
@@ -118,7 +134,8 @@ def poll_upload_task(task_id: str) -> bool:
 
 
 def fetch_documents() -> list[str]:
-    response = requests.get(
+    response = _request(
+        "GET",
         DOCUMENTS_ENDPOINT,
         timeout=REQUEST_TIMEOUT,
     )
@@ -129,7 +146,8 @@ def fetch_documents() -> list[str]:
 
 
 def query_backend(question: str) -> tuple[str, bool, list[dict[str, object]]]:
-    response = requests.post(
+    response = _request(
+        "POST",
         QUERY_ENDPOINT,
         json={"query": question},
         timeout=REQUEST_TIMEOUT,
@@ -144,7 +162,8 @@ def query_backend(question: str) -> tuple[str, bool, list[dict[str, object]]]:
 
 
 def reset_backend_workspace() -> None:
-    response = requests.delete(
+    response = _request(
+        "DELETE",
         RESET_ENDPOINT,
         timeout=REQUEST_TIMEOUT,
     )
@@ -162,7 +181,7 @@ def stream_answer(answer: str):
 
 def _display_file_name(file_name: str) -> str:
     return re.sub(
-        r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}_",
+        r"^(?:[0-9a-fA-F]{64}|[0-9a-fA-F]{8}-[0-9a-fA-F-]{27})_",
         "",
         file_name,
     )

@@ -24,7 +24,7 @@ load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=False)
 
 QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
 QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
-COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "docuquery_hybrid_v1")
+COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "docuquery_dense_v1")
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
