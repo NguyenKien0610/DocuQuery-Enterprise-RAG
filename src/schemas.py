@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, field_validator
 
 class UploadResponse(BaseModel):
     task_id: str
+    document_id: str
 
 
 class TaskStatusResponse(BaseModel):

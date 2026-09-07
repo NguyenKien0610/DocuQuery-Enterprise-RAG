@@ -29,6 +29,7 @@ REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 REDIS_DB = int(os.getenv("REDIS_DB", "0"))
 CACHE_TTL_SECONDS = 3600
 FALLBACK_CACHE_TTL_SECONDS = 300
+TASK_WORKSPACE_TTL_SECONDS = 86400
 
 TOP_K = int(os.getenv("RAG_TOP_K", "5"))
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
@@ -60,6 +61,26 @@ text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=CHUNK_SIZE,
     chunk_overlap=CHUNK_OVERLAP,
 )
+
+
+def _task_workspace_key(task_id: str) -> str:
+    return f"rag:task_workspace:{task_id}"
+
+
+def register_task_workspace(task_id: str, workspace_id: str) -> None:
+    redis_client.setex(
+        _task_workspace_key(task_id),
+        TASK_WORKSPACE_TTL_SECONDS,
+        workspace_id,
+    )
+
+
+def remove_task_workspace(task_id: str) -> None:
+    redis_client.delete(_task_workspace_key(task_id))
+
+
+def task_belongs_to_workspace(task_id: str, workspace_id: str) -> bool:
+    return redis_client.get(_task_workspace_key(task_id)) == workspace_id
 
 answer_prompt = PromptTemplate(
     input_variables=["context", "question"],

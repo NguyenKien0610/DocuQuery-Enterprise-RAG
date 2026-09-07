@@ -1,4 +1,5 @@
 import os
+import logging
 import shutil
 import uuid
 from contextlib import asynccontextmanager
@@ -11,12 +12,29 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=True)
 
-from src.rag_engine import ask_question, ensure_qdrant_collection, reset_workspace
+from src.rag_engine import (
+    ask_question,
+    ensure_qdrant_collection,
+    register_task_workspace,
+    remove_task_workspace,
+    reset_workspace,
+    task_belongs_to_workspace,
+)
 from src.schemas import QueryRequest, QueryResponse, TaskStatusResponse, UploadResponse
 from src.security import RequestContextDep
+from src.uploads import UploadRejected, save_validated_upload
 from src.worker import celery_app, process_document_task
 
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads"))
+logger = logging.getLogger(__name__)
+
+configured_upload_dir = Path(os.getenv("UPLOAD_DIR", "uploads"))
+UPLOAD_DIR = (
+    configured_upload_dir
+    if configured_upload_dir.is_absolute()
+    else PROJECT_ROOT / configured_upload_dir
+)
+MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
+MAX_EXTRACTED_BYTES = int(os.getenv("MAX_EXTRACTED_BYTES", str(100 * 1024 * 1024)))
 SUPPORTED_UPLOAD_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
 @asynccontextmanager
@@ -29,14 +47,15 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="DocuQuery v2.0 - Enterprise RAG API", lifespan=lifespan)
 
 
-def _list_uploaded_documents() -> list[str]:
+def _list_uploaded_documents(workspace_id: str) -> list[str]:
+    workspace_dir = UPLOAD_DIR / workspace_id
     try:
-        if not UPLOAD_DIR.exists():
+        if not workspace_dir.exists():
             return []
         return sorted(
             [
                 file_path.name
-                for file_path in UPLOAD_DIR.iterdir()
+                for file_path in workspace_dir.iterdir()
                 if file_path.is_file()
                 and file_path.suffix.lower() in SUPPORTED_UPLOAD_EXTENSIONS
             ]
@@ -76,33 +95,60 @@ async def upload_document(
     file: Annotated[UploadFile, File()],
     context: RequestContextDep,
 ) -> UploadResponse:
-    if not file.filename:
-        raise HTTPException(status_code=400, detail="A file is required.")
-
-    file_extension = Path(file.filename).suffix.lower()
-    if file_extension not in SUPPORTED_UPLOAD_EXTENSIONS:
-        raise HTTPException(
-            status_code=400,
-            detail="Only PDF, DOCX, and TXT files are supported.",
+    try:
+        saved = await save_validated_upload(
+            file,
+            UPLOAD_DIR / context.workspace_id,
+            MAX_UPLOAD_BYTES,
+            MAX_EXTRACTED_BYTES,
         )
+    except UploadRejected as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    except OSError as exc:
+        logger.exception("Failed to store uploaded document")
+        raise HTTPException(
+            status_code=503,
+            detail="Document storage is temporarily unavailable.",
+        ) from exc
 
-    target_path = UPLOAD_DIR / f"{uuid.uuid4()}_{Path(file.filename).name}"
-    with target_path.open("wb") as output_file:
-        shutil.copyfileobj(file.file, output_file)
+    task_id = str(uuid.uuid4())
+    try:
+        register_task_workspace(task_id, context.workspace_id)
+        process_document_task.apply_async(
+            args=[
+                str(saved.path.resolve()),
+                context.workspace_id,
+                saved.document_id,
+                saved.source_file,
+            ],
+            task_id=task_id,
+        )
+    except Exception as exc:
+        saved.path.unlink(missing_ok=True)
+        try:
+            remove_task_workspace(task_id)
+        except Exception:
+            logger.exception("Failed to remove task workspace mapping")
+        logger.exception("Failed to dispatch document processing task")
+        raise HTTPException(
+            status_code=503,
+            detail="Document processing is temporarily unavailable.",
+        ) from exc
 
-    task = process_document_task.delay(str(target_path.resolve()))
-    return UploadResponse(task_id=task.id)
+    return UploadResponse(task_id=task_id, document_id=saved.document_id)
 
 
 @app.get("/api/v1/documents/status/{task_id}", response_model=TaskStatusResponse)
 def get_document_status(task_id: str, context: RequestContextDep) -> TaskStatusResponse:
+    if not task_belongs_to_workspace(task_id, context.workspace_id):
+        raise HTTPException(status_code=404, detail="Task not found.")
     task_result = celery_app.AsyncResult(task_id)
 
     if task_result.failed():
         return TaskStatusResponse(
             task_id=task_id,
             status=task_result.status,
-            error=str(task_result.result),
+            error="Document processing failed.",
         )
 
     result_payload = task_result.result if task_result.successful() else None
@@ -115,7 +161,7 @@ def get_document_status(task_id: str, context: RequestContextDep) -> TaskStatusR
 
 @app.get("/api/v1/documents")
 def list_documents(context: RequestContextDep) -> dict:
-    return {"documents": _list_uploaded_documents()}
+    return {"documents": _list_uploaded_documents(context.workspace_id)}
 
 
 @app.post("/api/v1/query", response_model=QueryResponse)

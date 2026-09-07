@@ -1,4 +1,5 @@
 import json
+import hashlib
 from io import BytesIO
 from pathlib import Path
 import sys
@@ -31,37 +32,47 @@ def client(monkeypatch, tmp_path):
 def test_upload_accepts_valid_pdf_and_returns_task_id(client, monkeypatch):
     captured = {}
 
-    def fake_delay(file_path: str):
-        captured["file_path"] = file_path
-        return SimpleNamespace(id="task-valid-001")
+    def fake_apply_async(args, task_id):
+        captured["args"] = args
+        captured["task_id"] = task_id
+        return SimpleNamespace(id=task_id)
 
-    monkeypatch.setattr(main.process_document_task, "delay", fake_delay)
+    monkeypatch.setattr(main.process_document_task, "apply_async", fake_apply_async)
+    monkeypatch.setattr(
+        main,
+        "register_task_workspace",
+        lambda task_id, workspace_id: captured.update({"workspace": workspace_id}),
+    )
 
+    content = b"%PDF-1.4 valid pdf payload"
     response = client.post(
         "/api/v1/documents/upload",
         headers=AUTH_HEADERS,
-        files={"file": ("sample.pdf", BytesIO(b"%PDF-1.4 valid pdf payload"), "application/pdf")},
+        files={"file": ("sample.pdf", BytesIO(content), "application/pdf")},
     )
 
     assert response.status_code == 200
-    assert response.json() == {"task_id": "task-valid-001"}
-    assert captured["file_path"].endswith(".pdf")
+    payload = response.json()
+    assert payload["document_id"] == hashlib.sha256(content).hexdigest()
+    assert payload["task_id"] == captured["task_id"]
+    assert captured["workspace"] == "team-a"
+    assert captured["args"][1:] == [
+        "team-a",
+        payload["document_id"],
+        "sample.pdf",
+    ]
+    assert Path(captured["args"][0]).parent.name == "team-a"
 
 
-def test_upload_accepts_empty_pdf_payload_boundary_case(client, monkeypatch):
-    def fake_delay(file_path: str):
-        return SimpleNamespace(id="task-empty-001")
-
-    monkeypatch.setattr(main.process_document_task, "delay", fake_delay)
-
+def test_upload_rejects_empty_pdf_payload(client):
     response = client.post(
         "/api/v1/documents/upload",
         headers=AUTH_HEADERS,
         files={"file": ("empty.pdf", BytesIO(b""), "application/pdf")},
     )
 
-    assert response.status_code == 200
-    assert response.json() == {"task_id": "task-empty-001"}
+    assert response.status_code == 400
+    assert [path for path in main.UPLOAD_DIR.rglob("*") if path.is_file()] == []
 
 
 def test_upload_rejects_non_pdf_extension(client):
@@ -73,6 +84,80 @@ def test_upload_rejects_non_pdf_extension(client):
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Only PDF, DOCX, and TXT files are supported."
+
+
+def test_upload_rejects_oversized_file_before_dispatch(client, monkeypatch):
+    monkeypatch.setattr(main, "MAX_UPLOAD_BYTES", 4)
+    monkeypatch.setattr(
+        main.process_document_task,
+        "apply_async",
+        lambda **kwargs: pytest.fail("Invalid upload reached Celery."),
+    )
+
+    response = client.post(
+        "/api/v1/documents/upload",
+        headers=AUTH_HEADERS,
+        files={"file": ("large.txt", BytesIO(b"12345"), "text/plain")},
+    )
+
+    assert response.status_code == 413
+    assert [path for path in main.UPLOAD_DIR.rglob("*") if path.is_file()] == []
+
+
+def test_upload_dispatch_failure_removes_file_and_task_mapping(client, monkeypatch):
+    removed_tasks = []
+    monkeypatch.setattr(main, "register_task_workspace", lambda task_id, workspace: None)
+    monkeypatch.setattr(main, "remove_task_workspace", removed_tasks.append)
+    monkeypatch.setattr(
+        main.process_document_task,
+        "apply_async",
+        lambda **kwargs: (_ for _ in ()).throw(RuntimeError("broker secret")),
+    )
+
+    response = client.post(
+        "/api/v1/documents/upload",
+        headers=AUTH_HEADERS,
+        files={"file": ("notes.txt", BytesIO(b"hello"), "text/plain")},
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Document processing is temporarily unavailable."}
+    assert len(removed_tasks) == 1
+    assert [path for path in main.UPLOAD_DIR.rglob("*") if path.is_file()] == []
+
+
+def test_list_documents_isolated_by_workspace(client):
+    team_a = main.UPLOAD_DIR / "team-a"
+    team_b = main.UPLOAD_DIR / "team-b"
+    team_a.mkdir()
+    team_b.mkdir()
+    (team_a / "a.txt").write_text("a", encoding="utf-8")
+    (team_b / "b.txt").write_text("b", encoding="utf-8")
+
+    response = client.get("/api/v1/documents", headers=AUTH_HEADERS)
+
+    assert response.status_code == 200
+    assert response.json() == {"documents": ["a.txt"]}
+
+
+def test_task_status_hidden_from_other_workspace(client, monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "task_belongs_to_workspace",
+        lambda task_id, workspace_id: False,
+    )
+    monkeypatch.setattr(
+        main.celery_app,
+        "AsyncResult",
+        lambda task_id: pytest.fail("Hidden task result was accessed."),
+    )
+
+    response = client.get(
+        "/api/v1/documents/status/private-task",
+        headers={"X-API-Key": "test-api-key", "X-Workspace-ID": "team-b"},
+    )
+
+    assert response.status_code == 404
 
 
 def test_query_returns_cached_answer_on_cache_hit(client, monkeypatch):
