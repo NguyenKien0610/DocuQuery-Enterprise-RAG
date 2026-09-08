@@ -1,4 +1,5 @@
 import hashlib
+import math
 import os
 import re
 import time
@@ -16,6 +17,13 @@ REQUEST_TIMEOUT = 120
 STREAM_DELAY_SECONDS = 0.03
 TASK_POLL_INTERVAL_SECONDS = 2
 TASK_POLL_TIMEOUT_SECONDS = 300
+STATUS_LABELS = {
+    "generated": "Generated answer",
+    "retrieved": "Evidence only — no generated answer",
+    "degraded": "Generation unavailable — not a complete generated answer",
+    "insufficient_context": "Insufficient evidence — no supported answer",
+    "error": "Request failed",
+}
 
 
 def _api_headers() -> dict[str, str]:
@@ -145,11 +153,11 @@ def fetch_documents() -> list[str]:
     return [str(document) for document in documents]
 
 
-def query_backend(question: str) -> tuple[str, bool, list[dict[str, object]], str]:
+def query_backend(question: str, *, retrieval_only: bool = False) -> tuple[str, bool, list[dict[str, object]], str]:
     response = _request(
         "POST",
         QUERY_ENDPOINT,
-        json={"query": question},
+        json={"query": question, "retrieval_only": retrieval_only},
         timeout=REQUEST_TIMEOUT,
     )
     response.raise_for_status()
@@ -171,6 +179,56 @@ def reset_backend_workspace() -> None:
     response.raise_for_status()
 
 
+def render_document_delete_controls() -> None:
+    try:
+        response = _request("GET", f"{DOCUMENTS_ENDPOINT}/managed", timeout=REQUEST_TIMEOUT)
+        response.raise_for_status()
+        documents = response.json().get("items", [])
+    except (requests.exceptions.RequestException, ValueError):
+        st.sidebar.caption("Document management is temporarily unavailable.")
+        return
+    if not documents:
+        return
+    with st.sidebar.expander("Delete one document (owner only)"):
+        by_revision = {doc["revision"]: doc for doc in documents}
+        selected = st.selectbox(
+            "Document to delete", list(by_revision),
+            format_func=lambda revision: _display_file_name(str(by_revision[revision]["source_file"])),
+            key="delete_document_revision",
+        )
+        if selected is None:
+            return
+        confirmed = st.checkbox(
+            "I confirm deletion of this document and its indexed content.",
+            key=f"confirm_delete_{selected}",
+        )
+        st.caption("Previous chat and exports are historical copies. Active uploads must finish first.")
+        if st.button("Delete selected document", key="delete_one_document", disabled=not confirmed) and confirmed:
+            document = by_revision[selected]
+            try:
+                response = _request(
+                    "DELETE", f"{DOCUMENTS_ENDPOINT}/{document['document_id']}",
+                    params={"revision": selected}, timeout=REQUEST_TIMEOUT,
+                )
+                response.raise_for_status()
+                cleanup_pending = bool(response.json().get("cleanup_pending"))
+                st.session_state.sidebar_notice = (
+                    "warning" if cleanup_pending else "success",
+                    "Document removed from search. Physical cleanup is pending; an owner can reconcile."
+                    if cleanup_pending else "Document removed from search. Previous chat remains historical.",
+                )
+                st.rerun()
+            except requests.exceptions.RequestException as exc:
+                status_code = exc.response.status_code if exc.response is not None else 0
+                st.error({
+                    403: "Only a workspace owner can delete documents.",
+                    404: "Document no longer exists. Refresh the document list.",
+                    409: "Document changed or workspace has active uploads. Refresh and try again after processing.",
+                }.get(status_code, "Document deletion is temporarily unavailable. Please retry."))
+            except ValueError:
+                st.error("Backend returned an invalid deletion response. Refresh the document list.")
+
+
 def stream_answer(answer: str):
     for chunk in re.split(r"(\s+)", answer):
         if not chunk:
@@ -181,8 +239,9 @@ def stream_answer(answer: str):
 
 
 def _display_file_name(file_name: str) -> str:
+    file_name = file_name.replace("\\", "/").rsplit("/", 1)[-1]
     return re.sub(
-        r"^(?:[0-9a-fA-F]{64}|[0-9a-fA-F]{8}-[0-9a-fA-F-]{27})_",
+        r"^(?:[0-9a-fA-F]{32}|[0-9a-fA-F]{64}|[0-9a-fA-F]{8}-[0-9a-fA-F-]{27})_",
         "",
         file_name,
     )
@@ -192,9 +251,57 @@ def _format_context_chunk(chunk: str) -> str:
     return chunk.replace("\r\n", "\n").replace("\r", "\n").strip()
 
 
+def _text_block(text: str) -> str:
+    """Keep arbitrary document/chat Markdown inside a literal fenced block."""
+    fence = "`" * max(3, max((len(match) + 1 for match in re.findall(r"`+", text)), default=0))
+    return f"{fence}text\n{text}\n{fence}"
+
+
+def _citation_details(chunk: dict[str, object]) -> str:
+    details = []
+    page = chunk.get("page_number")
+    if type(page) is int and page > 0:
+        details.append(f"page: {page}")
+    similarity = chunk.get("similarity")
+    if isinstance(similarity, (int, float)) and not isinstance(similarity, bool) and math.isfinite(similarity):
+        details.append(f"similarity: {similarity:.2f} (not confidence)")
+    return "; ".join(details)
+
+
+def export_conversation(messages: list[dict]) -> str:
+    """Export current-session content and an explicit allowlist of citation fields."""
+    sections = []
+    for message in messages:
+        role = message.get("role")
+        if role not in ("user", "assistant"):
+            continue
+        sections.append(f"## {role.title()}")
+        if role == "assistant":
+            status = str(message.get("status", "unknown"))
+            sections.append(f"Status: {STATUS_LABELS.get(status, 'Unknown response status')}")
+        content = message.get("content", "")
+        if isinstance(content, str) and content:
+            sections.append(_text_block(content))
+        if role != "assistant":
+            continue
+        for index, chunk in enumerate(message.get("context", []), 1):
+            if not isinstance(chunk, dict):
+                continue
+            filename = _display_file_name(str(chunk.get("source_file", "Unknown source")))
+            sections.append(f"### [Source {index}]")
+            sections.append(_text_block(filename))
+            details = _citation_details(chunk)
+            if details:
+                sections.append(details)
+            text = chunk.get("text", "")
+            if isinstance(text, str) and text:
+                sections.append(_text_block(text))
+    return "\n\n".join(sections) + ("\n" if sections else "")
+
+
 def render_context_chunks(context: list[dict[str, object]]) -> None:
     with st.expander("🔍 Xem trích dẫn nguồn (Context)"):
-        grouped_chunks: dict[str, list[dict[str, object]]] = {}
+        grouped_chunks: dict[str, list[tuple[int, dict[str, object]]]] = {}
 
         for idx, chunk in enumerate(context, start=1):
             if not isinstance(chunk, dict):
@@ -204,14 +311,14 @@ def render_context_chunks(context: list[dict[str, object]]) -> None:
                     "text": str(chunk),
                 }
             source_file = str(chunk.get("source_file", "Unknown source"))
-            grouped_chunks.setdefault(source_file, []).append(chunk)
+            grouped_chunks.setdefault(source_file, []).append((idx, chunk))
 
         total_files = len(grouped_chunks)
         for file_idx, (source_file, chunks) in enumerate(grouped_chunks.items(), start=1):
             display_name = _display_file_name(source_file)
-            st.markdown(f"### 📁 {display_name}")
+            st.text(f"📁 {display_name}")
 
-            for chunk_idx, chunk in enumerate(chunks, start=1):
+            for chunk_idx, (source_number, chunk) in enumerate(chunks, start=1):
                 raw_chunk_index = chunk.get("chunk_index", chunk_idx - 1)
                 try:
                     chunk_number = (
@@ -223,13 +330,12 @@ def render_context_chunks(context: list[dict[str, object]]) -> None:
                     chunk_number = chunk_idx
 
                 formatted_chunk = _format_context_chunk(str(chunk.get("text", "")))
-                st.markdown(f"**📄 Trích đoạn {chunk_number}:**")
-                page_number = chunk.get("page_number")
-                if page_number is not None:
-                    st.caption(f"Trang: {page_number}")
+                st.markdown(f"**[Source {source_number}] — Trích đoạn {chunk_number}**")
+                details = _citation_details(chunk)
+                if details:
+                    st.caption(details)
                 if formatted_chunk:
-                    blockquote = "\n".join(f"> {line}" for line in formatted_chunk.splitlines())
-                    st.markdown(blockquote)
+                    st.code(formatted_chunk, language="text", wrap_lines=True)
                 else:
                     st.info("Không có nội dung khả dụng.")
 
@@ -298,6 +404,8 @@ def render_sidebar() -> None:
     except ValueError:
         st.sidebar.error("Backend returned an invalid JSON response.")
 
+    render_document_delete_controls()
+
     if st.sidebar.button("🗑️ Tạo phiên Chat mới (Xóa dữ liệu)", use_container_width=True):
         try:
             reset_backend_workspace()
@@ -307,7 +415,8 @@ def render_sidebar() -> None:
             st.session_state.pending_upload = None
             st.session_state.sidebar_notice = (
                 "success",
-                "Workspace reset completed. All uploaded documents were removed.",
+                "Workspace reset completed. Documents are no longer searchable; "
+                "physical cleanup may still be pending.",
             )
             st.rerun()
         except requests.exceptions.RequestException as exc:
@@ -317,64 +426,77 @@ def render_sidebar() -> None:
 def render_chat_history() -> None:
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
-            if message["role"] == "assistant" and message.get("cached"):
-                st.caption("⚡ Cached")
-            st.markdown(message["content"])
-            if message.get("status") == "degraded":
-                st.warning("Dịch vụ đang gián đoạn; đây chưa phải câu trả lời được tạo đầy đủ.")
-            if message["role"] == "assistant" and message.get("context"):
-                render_context_chunks(message["context"])
+            if message["role"] == "assistant":
+                render_assistant_message(message)
+            else:
+                st.markdown(message["content"])
 
 
-def main() -> None:
-    st.set_page_config(page_title="DocuQuery Frontend", page_icon="📄", layout="wide")
-    init_session_state()
+def render_assistant_message(message: dict, *, stream: bool = False) -> None:
+    status = message.get("status", "generated")
+    if status in ("degraded", "error"):
+        st.warning(STATUS_LABELS[status])
+    elif status in ("retrieved", "insufficient_context"):
+        st.info(STATUS_LABELS[status])
+    if message.get("cached"):
+        st.caption("⚡ Cached")
+    content = message.get("content", "")
+    if content and status != "retrieved":
+        if stream:
+            st.write_stream(stream_answer(content))
+        else:
+            st.markdown(content)
+    if message.get("context"):
+        render_context_chunks(message["context"])
 
-    st.title("DocuQuery")
-    st.caption("Upload PDF documents and query them through the FastAPI backend.")
 
-    render_sidebar()
-    render_chat_history()
-
-    question = st.chat_input("Ask a question about your uploaded documents")
-    if not question:
-        return
-
+def handle_question(question: str, *, retrieval_only: bool) -> None:
     st.session_state.messages.append({"role": "user", "content": question})
     with st.chat_message("user"):
         st.markdown(question)
 
     with st.chat_message("assistant"):
         try:
-            answer, cached, context, status = query_backend(question)
-            if status == "degraded":
-                st.warning("Dịch vụ đang gián đoạn; hãy thử lại sau.")
-            if cached:
-                st.caption("⚡ Cached")
-            streamed_answer = st.write_stream(stream_answer(answer))
-            if context:
-                render_context_chunks(context)
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content": streamed_answer,
-                    "cached": cached,
-                    "context": context,
-                    "status": status,
-                }
-            )
-        except requests.exceptions.RequestException as exc:
-            error_message = f"Cannot connect to backend API: {exc}"
+            answer, cached, context, status = query_backend(question, retrieval_only=retrieval_only)
+            message = {
+                "role": "assistant", "content": answer if status != "retrieved" else "",
+                "cached": cached, "context": context, "status": status,
+            }
+            render_assistant_message(message, stream=status == "generated")
+            st.session_state.messages.append(message)
+        except requests.exceptions.RequestException:
+            error_message = "Cannot connect to backend API. Please try again."
             st.error(error_message)
             st.session_state.messages.append(
-                {"role": "assistant", "content": error_message, "context": []}
+                {"role": "assistant", "content": error_message, "context": [], "status": "error"}
             )
         except ValueError:
             error_message = "Backend returned an invalid JSON response."
             st.error(error_message)
             st.session_state.messages.append(
-                {"role": "assistant", "content": error_message, "context": []}
+                {"role": "assistant", "content": error_message, "context": [], "status": "error"}
             )
+
+
+def main() -> None:
+    st.set_page_config(page_title="DocuQuery Frontend", page_icon="📄", layout="wide")
+    init_session_state()
+    st.title("DocuQuery")
+    st.caption("Upload PDF, DOCX or TXT documents, then inspect evidence or generate an answer.")
+    mode = st.radio("Query mode", ["Answer generation", "Evidence only"], horizontal=True)
+    if mode == "Evidence only":
+        st.caption("Search evidence without Gemini or the answer cache. Similarity is not answer confidence.")
+    render_sidebar()
+    render_chat_history()
+    question = st.chat_input("Ask a question about your uploaded documents")
+    if question:
+        handle_question(question, retrieval_only=mode == "Evidence only")
+    if st.session_state.messages:
+        st.download_button(
+            "Download conversation (.md)", export_conversation(st.session_state.messages),
+            file_name="docuquery-conversation.md", mime="text/markdown; charset=utf-8",
+            key="download_conversation", on_click="ignore",
+        )
 
 
 if __name__ == "__main__":
