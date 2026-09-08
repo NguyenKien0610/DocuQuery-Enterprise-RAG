@@ -1,0 +1,1 @@
+Hệ thống thử nghiệm Bạch Dương sao lưu cơ sở dữ liệu mỗi đêm lúc hai giờ. Bản sao được giữ trong ba mươi ngày tại vùng lưu trữ dự phòng. Đội vận hành diễn tập khôi phục vào thứ Sáu đầu tiên mỗi tháng. Chỉ trưởng ca có quyền phê duyệt việc khôi phục dữ liệu.

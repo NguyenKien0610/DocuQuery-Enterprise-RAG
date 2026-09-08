@@ -1,0 +1,14 @@
+[
+ {"id":"c1","language":"vi","query":"Mua hàng giá trị lớn hơn tám triệu cần ai đồng ý?","sources":["cal-purchasing.txt"],"reference":"Trưởng phòng."},
+ {"id":"c2","language":"vi","query":"Nhà cung cấp chờ thanh toán bao lâu sau khi gửi đủ hóa đơn?","sources":["cal-purchasing.txt"],"reference":"21 ngày."},
+ {"id":"c3","language":"vi","query":"Một người được giữ tối đa bao nhiêu sách mượn?","sources":["cal-library.txt"],"reference":"4 cuốn."},
+ {"id":"c4","language":"vi","query":"Thư viện nghỉ vào ngày nào trong tuần?","sources":["cal-library.txt"],"reference":"Thứ hai."},
+ {"id":"c5","language":"vi","query":"Khách phải hẹn trước mấy ngày làm việc?","sources":["cal-visitors.txt"],"reference":"2 ngày."},
+ {"id":"c6","language":"vi","query":"Rời văn phòng rồi có được giữ thẻ khách không?","sources":["cal-visitors.txt"],"reference":"Không, phải trả thẻ."},
+ {"id":"c7","language":"vi","query":"Lãi suất cho vay mua ô tô là bao nhiêu?","sources":[],"reference":"Không có thông tin."},
+ {"id":"c8","language":"vi","query":"Sao Mai có bao nhiêu chi nhánh ở châu Âu?","sources":[],"reference":"Không có thông tin."},
+ {"id":"c9","language":"vi","query":"Phí phạt khi trả sách muộn là bao nhiêu tiền mỗi ngày?","sources":[],"reference":"Không quy định mức phạt."},
+ {"id":"c10","language":"vi","query":"Số điện thoại cá nhân của trưởng phòng mua sắm là gì?","sources":[],"reference":"Không cung cấp số điện thoại."},
+ {"id":"c11","language":"vi","query":"Công ty có hỗ trợ tiêm phòng cúm không?","sources":[],"reference":"Không có thông tin."},
+ {"id":"c12","language":"vi","query":"Ai là kiến trúc sư thiết kế tòa nhà văn phòng?","sources":[],"reference":"Không có thông tin."}
+]

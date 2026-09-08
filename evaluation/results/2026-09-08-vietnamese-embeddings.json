@@ -1,0 +1,1622 @@
+{
+  "schema_version": 1,
+  "experiment": "embedding_retrieval_comparison",
+  "document_level": true,
+  "scope_note": "Full TXT documents are embedded as single vectors; this is not the production chunk pipeline.",
+  "k": 5,
+  "threshold_grid": [
+    0.2,
+    0.3,
+    0.35,
+    0.4,
+    0.5,
+    0.6
+  ],
+  "fingerprints": {
+    "corpus_sha256": "97f7c7f9a29e0680db21c6f90b882e3cfd714b1420df9dd53fd5cda9c9d8eb85",
+    "calibration_questions_sha256": "8ef2c6e32c1eae8306deb1b0eeec5fc30c9f2d9fe1acd0af971256f5a6c7b6e4",
+    "test_questions_sha256": "594127e6d1c6d46972886c488f4a916f22dc6d5732e137fa0802cc1c4224a990"
+  },
+  "models": [
+    {
+      "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "config_commit_hash": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "max_seq_length": 256,
+      "document_token_lengths": [
+        99,
+        107,
+        113,
+        119,
+        127,
+        121
+      ],
+      "calibration": {
+        "rows": [
+          {
+            "id": "c1",
+            "language": "vi",
+            "query": "Mua hàng giá trị lớn hơn tám triệu cần ai đồng ý?",
+            "sources": [
+              "cal-purchasing.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.7622339817753608
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.729423566724058
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6522080562507437
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6340449441973794
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.629313553822294
+              }
+            ],
+            "retrieved_filenames": [
+              "test-delivery.txt",
+              "cal-purchasing.txt",
+              "cal-library.txt",
+              "test-remote.txt",
+              "test-equipment.txt"
+            ],
+            "max_score": 0.7622339817753608,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 0.5
+          },
+          {
+            "id": "c2",
+            "language": "vi",
+            "query": "Nhà cung cấp chờ thanh toán bao lâu sau khi gửi đủ hóa đơn?",
+            "sources": [
+              "cal-purchasing.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.7367924600946761
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6796848997763955
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6739828280592615
+              },
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.6672361850012698
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6278678994801823
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt",
+              "test-delivery.txt",
+              "test-equipment.txt",
+              "cal-visitors.txt",
+              "test-remote.txt"
+            ],
+            "max_score": 0.7367924600946761,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c3",
+            "language": "vi",
+            "query": "Một người được giữ tối đa bao nhiêu sách mượn?",
+            "sources": [
+              "cal-library.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-library.txt",
+                "score": 0.7314453668944971
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6921765671813699
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6727509434547425
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6700635759921498
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6187710259556966
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-library.txt",
+              "cal-purchasing.txt",
+              "test-delivery.txt",
+              "test-equipment.txt",
+              "test-remote.txt"
+            ],
+            "max_score": 0.7314453668944971,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c4",
+            "language": "vi",
+            "query": "Thư viện nghỉ vào ngày nào trong tuần?",
+            "sources": [
+              "cal-library.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6101916704280496
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6036171301295881
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-library.txt",
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.6101916704280496,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c5",
+            "language": "vi",
+            "query": "Khách phải hẹn trước mấy ngày làm việc?",
+            "sources": [
+              "cal-visitors.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.6479709358105792
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6446272098437147
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6231120329539585
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6207271934630434
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-visitors.txt",
+              "test-equipment.txt",
+              "test-remote.txt",
+              "cal-library.txt"
+            ],
+            "max_score": 0.6479709358105792,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c6",
+            "language": "vi",
+            "query": "Rời văn phòng rồi có được giữ thẻ khách không?",
+            "sources": [
+              "cal-visitors.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.7272591961919007
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6151668353188716
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-visitors.txt",
+              "test-delivery.txt"
+            ],
+            "max_score": 0.7272591961919007,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c7",
+            "language": "vi",
+            "query": "Lãi suất cho vay mua ô tô là bao nhiêu?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6200615062868492
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6193774016244461
+              }
+            ],
+            "retrieved_filenames": [
+              "test-equipment.txt",
+              "cal-library.txt"
+            ],
+            "max_score": 0.6200615062868492,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c8",
+            "language": "vi",
+            "query": "Sao Mai có bao nhiêu chi nhánh ở châu Âu?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.5502807639234666,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c9",
+            "language": "vi",
+            "query": "Phí phạt khi trả sách muộn là bao nhiêu tiền mỗi ngày?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6269131152373091
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6154062234691284
+              }
+            ],
+            "retrieved_filenames": [
+              "test-equipment.txt",
+              "cal-library.txt"
+            ],
+            "max_score": 0.6269131152373091,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c10",
+            "language": "vi",
+            "query": "Số điện thoại cá nhân của trưởng phòng mua sắm là gì?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.7685186879895525
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.7132320759650912
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.7037153672217114
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6732328686428977
+              },
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.663239120907825
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt",
+              "cal-library.txt",
+              "test-equipment.txt",
+              "test-delivery.txt",
+              "cal-visitors.txt"
+            ],
+            "max_score": 0.7685186879895525,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c11",
+            "language": "vi",
+            "query": "Công ty có hỗ trợ tiêm phòng cúm không?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.7053590384461381
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6690015904123794
+              },
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.6241266460291988
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6204993758196042
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6108005843586946
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt",
+              "test-equipment.txt",
+              "cal-visitors.txt",
+              "test-remote.txt",
+              "test-delivery.txt"
+            ],
+            "max_score": 0.7053590384461381,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c12",
+            "language": "vi",
+            "query": "Ai là kiến trúc sư thiết kế tòa nhà văn phòng?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.56273354050193,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          }
+        ],
+        "aggregate": {
+          "count": 12,
+          "answerable_count": 6,
+          "document_recall_at_k": 1.0,
+          "document_mrr": 0.9166666666666666,
+          "unanswerable_count": 6,
+          "abstention_precision": 1.0,
+          "abstention_recall": 0.3333333333333333,
+          "answerable_abstention_rate": 0.0
+        },
+        "by_language": {
+          "vi": {
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 0.9166666666666666,
+            "unanswerable_count": 6,
+            "abstention_precision": 1.0,
+            "abstention_recall": 0.3333333333333333,
+            "answerable_abstention_rate": 0.0
+          }
+        },
+        "threshold": 0.6,
+        "grid": [
+          0.2,
+          0.3,
+          0.35,
+          0.4,
+          0.5,
+          0.6
+        ],
+        "selection_score": 0.6666666666666666
+      },
+      "test": {
+        "rows": [
+          {
+            "id": "t1",
+            "language": "vi",
+            "query": "Gửi hàng trong thành phố mất mấy ngày làm việc?",
+            "sources": [
+              "test-delivery.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6547394031969169
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6040928878841236
+              }
+            ],
+            "retrieved_filenames": [
+              "test-delivery.txt",
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.6547394031969169,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t2",
+            "language": "vi",
+            "query": "Đơn hàng bao nhiêu tiền thì không mất phí ship?",
+            "sources": [
+              "test-delivery.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6922500393906266
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6602243121278673
+              }
+            ],
+            "retrieved_filenames": [
+              "test-delivery.txt",
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.6922500393906266,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t3",
+            "language": "vi",
+            "query": "Nếu hộp hàng bị móp, tôi phải thông báo trong thời hạn nào?",
+            "sources": [
+              "test-delivery.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.7342416299354996
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6862062281390204
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6840050845279227
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6370216168879743
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6232091472024567
+              }
+            ],
+            "retrieved_filenames": [
+              "test-delivery.txt",
+              "cal-purchasing.txt",
+              "test-equipment.txt",
+              "cal-library.txt",
+              "test-remote.txt"
+            ],
+            "max_score": 0.7342416299354996,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t4",
+            "language": "vi",
+            "query": "Tôi có thể trả tiền mặt cho người giao hàng không?",
+            "sources": [
+              "test-delivery.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.75823110138567
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6940848098310464
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6663728404939202
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6572380117646768
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6336928215206035
+              }
+            ],
+            "retrieved_filenames": [
+              "test-delivery.txt",
+              "cal-purchasing.txt",
+              "test-equipment.txt",
+              "cal-library.txt",
+              "test-remote.txt"
+            ],
+            "max_score": 0.75823110138567,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t5",
+            "language": "vi",
+            "query": "Mỗi tuần được làm ở nhà nhiều nhất mấy ngày?",
+            "sources": [
+              "test-remote.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6518793400995393
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6275289797288434
+              }
+            ],
+            "retrieved_filenames": [
+              "test-remote.txt",
+              "cal-library.txt"
+            ],
+            "max_score": 0.6518793400995393,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t6",
+            "language": "vi",
+            "query": "Hạn chót đăng ký lịch làm từ xa tuần sau là khi nào?",
+            "sources": [
+              "test-remote.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.648965029413457
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6349625747924863
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6157010578898429
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6122537824713634
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-visitors.txt",
+              "test-equipment.txt",
+              "test-remote.txt",
+              "cal-library.txt"
+            ],
+            "max_score": 0.648965029413457,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 0.3333333333333333
+          },
+          {
+            "id": "t7",
+            "language": "vi",
+            "query": "Khoản trợ cấp mạng Internet hằng tháng là bao nhiêu?",
+            "sources": [
+              "test-remote.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.5475158662468075,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t8",
+            "language": "vi",
+            "query": "Làm ngoài công ty cần dùng kết nối nào để truy cập hệ thống?",
+            "sources": [
+              "test-remote.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6989705520921019
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6510610164196329
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6460104198440301
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6244433188768279
+              },
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.6240109732435164
+              }
+            ],
+            "retrieved_filenames": [
+              "test-remote.txt",
+              "cal-purchasing.txt",
+              "test-equipment.txt",
+              "test-delivery.txt",
+              "cal-visitors.txt"
+            ],
+            "max_score": 0.6989705520921019,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t9",
+            "language": "vi",
+            "query": "Laptop được kiểm tra theo chu kỳ bao lâu?",
+            "sources": [
+              "test-equipment.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6192153048363863
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6032247121634023
+              }
+            ],
+            "retrieved_filenames": [
+              "test-equipment.txt",
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.6192153048363863,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t10",
+            "language": "vi",
+            "query": "Bị mất máy tính thì phải báo cho bộ phận công nghệ trong bao lâu?",
+            "sources": [
+              "test-equipment.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.7710913215659896
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.669430777892055
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6080630182753168
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6030617482219172
+              }
+            ],
+            "retrieved_filenames": [
+              "test-equipment.txt",
+              "cal-purchasing.txt",
+              "cal-library.txt",
+              "test-delivery.txt"
+            ],
+            "max_score": 0.7710913215659896,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t11",
+            "language": "vi",
+            "query": "Nhân viên thôi việc phải bàn giao máy vào ngày nào?",
+            "sources": [
+              "test-equipment.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6003258888467288
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-library.txt"
+            ],
+            "max_score": 0.6003258888467288,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t12",
+            "language": "vi",
+            "query": "Máy đang sửa thì có được cấp máy khác dùng tạm không?",
+            "sources": [
+              "test-equipment.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.6784803859522435
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6565037220651528
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6406090476672877
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6124475446622046
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-visitors.txt",
+              "cal-purchasing.txt",
+              "test-equipment.txt",
+              "test-delivery.txt"
+            ],
+            "max_score": 0.6784803859522435,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 0.3333333333333333
+          },
+          {
+            "id": "t13",
+            "language": "vi",
+            "query": "Thưởng Tết năm nay được bao nhiêu tháng lương?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6898389911712299
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6553649603764016
+              },
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.6304006013029169
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6086333901554049
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6052729182396024
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt",
+              "test-equipment.txt",
+              "cal-visitors.txt",
+              "cal-library.txt",
+              "test-delivery.txt"
+            ],
+            "max_score": 0.6898389911712299,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t14",
+            "language": "vi",
+            "query": "Mật khẩu VPN của công ty là gì?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "test-remote.txt",
+                "score": 0.646619024119919
+              }
+            ],
+            "retrieved_filenames": [
+              "test-remote.txt"
+            ],
+            "max_score": 0.646619024119919,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t15",
+            "language": "vi",
+            "query": "Nếu giao hàng trễ thì công ty đền bù bao nhiêu phần trăm?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.7863446762838298
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.7677288957708974
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6627743698536573
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.6493730201355556
+              },
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.6190667028689172
+              }
+            ],
+            "retrieved_filenames": [
+              "test-delivery.txt",
+              "cal-purchasing.txt",
+              "test-equipment.txt",
+              "test-remote.txt",
+              "cal-visitors.txt"
+            ],
+            "max_score": 0.7863446762838298,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t16",
+            "language": "vi",
+            "query": "Công ty thuê văn phòng với giá bao nhiêu một tháng?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6663430289491223
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6410242809414817
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.614672974642942
+              }
+            ],
+            "retrieved_filenames": [
+              "test-equipment.txt",
+              "cal-purchasing.txt",
+              "test-remote.txt"
+            ],
+            "max_score": 0.6663430289491223,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t17",
+            "language": "vi",
+            "query": "Hãng và model máy tính xách tay cấp cho nhân viên là gì?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6520486515602772
+              }
+            ],
+            "retrieved_filenames": [
+              "test-delivery.txt"
+            ],
+            "max_score": 0.6520486515602772,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t18",
+            "language": "vi",
+            "query": "Phòng tập thể thao của công ty mở cửa lúc mấy giờ?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6082918108883479
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.6082918108883479,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          }
+        ],
+        "aggregate": {
+          "count": 18,
+          "answerable_count": 12,
+          "document_recall_at_k": 0.8333333333333334,
+          "document_mrr": 0.7222222222222222,
+          "unanswerable_count": 6,
+          "abstention_precision": 0.0,
+          "abstention_recall": 0.0,
+          "answerable_abstention_rate": 0.08333333333333333
+        },
+        "by_language": {
+          "vi": {
+            "count": 18,
+            "answerable_count": 12,
+            "document_recall_at_k": 0.8333333333333334,
+            "document_mrr": 0.7222222222222222,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.0,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.08333333333333333
+          }
+        }
+      }
+    },
+    {
+      "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "config_commit_hash": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "max_seq_length": 128,
+      "document_token_lengths": [
+        64,
+        64,
+        71,
+        73,
+        79,
+        78
+      ],
+      "calibration": {
+        "rows": [
+          {
+            "id": "c1",
+            "language": "vi",
+            "query": "Mua hàng giá trị lớn hơn tám triệu cần ai đồng ý?",
+            "sources": [
+              "cal-purchasing.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.36640906575629084,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c2",
+            "language": "vi",
+            "query": "Nhà cung cấp chờ thanh toán bao lâu sau khi gửi đủ hóa đơn?",
+            "sources": [
+              "cal-purchasing.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.6362908208211359
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.5576651725969184
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt",
+              "test-delivery.txt"
+            ],
+            "max_score": 0.6362908208211359,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c3",
+            "language": "vi",
+            "query": "Một người được giữ tối đa bao nhiêu sách mượn?",
+            "sources": [
+              "cal-library.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-library.txt",
+                "score": 0.6963501172469979
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-library.txt"
+            ],
+            "max_score": 0.6963501172469979,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c4",
+            "language": "vi",
+            "query": "Thư viện nghỉ vào ngày nào trong tuần?",
+            "sources": [
+              "cal-library.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-library.txt",
+                "score": 0.584470843368254
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-library.txt"
+            ],
+            "max_score": 0.584470843368254,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c5",
+            "language": "vi",
+            "query": "Khách phải hẹn trước mấy ngày làm việc?",
+            "sources": [
+              "cal-visitors.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.6829450506382178
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.581212080515535
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.5020465207959203
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-visitors.txt",
+              "test-remote.txt",
+              "test-delivery.txt"
+            ],
+            "max_score": 0.6829450506382178,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c6",
+            "language": "vi",
+            "query": "Rời văn phòng rồi có được giữ thẻ khách không?",
+            "sources": [
+              "cal-visitors.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.572033019440116
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-visitors.txt"
+            ],
+            "max_score": 0.572033019440116,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c7",
+            "language": "vi",
+            "query": "Lãi suất cho vay mua ô tô là bao nhiêu?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.35486261208664743,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c8",
+            "language": "vi",
+            "query": "Sao Mai có bao nhiêu chi nhánh ở châu Âu?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.23656060455387828,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c9",
+            "language": "vi",
+            "query": "Phí phạt khi trả sách muộn là bao nhiêu tiền mỗi ngày?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.44901397628062534,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c10",
+            "language": "vi",
+            "query": "Số điện thoại cá nhân của trưởng phòng mua sắm là gì?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.31599997828889526,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c11",
+            "language": "vi",
+            "query": "Công ty có hỗ trợ tiêm phòng cúm không?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.23820580025430532,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c12",
+            "language": "vi",
+            "query": "Ai là kiến trúc sư thiết kế tòa nhà văn phòng?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.23373074239986608,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          }
+        ],
+        "aggregate": {
+          "count": 12,
+          "answerable_count": 6,
+          "document_recall_at_k": 0.8333333333333334,
+          "document_mrr": 0.8333333333333334,
+          "unanswerable_count": 6,
+          "abstention_precision": 0.8571428571428571,
+          "abstention_recall": 1.0,
+          "answerable_abstention_rate": 0.16666666666666666
+        },
+        "by_language": {
+          "vi": {
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.8333333333333334,
+            "document_mrr": 0.8333333333333334,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.8571428571428571,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 0.16666666666666666
+          }
+        },
+        "threshold": 0.5,
+        "grid": [
+          0.2,
+          0.3,
+          0.35,
+          0.4,
+          0.5,
+          0.6
+        ],
+        "selection_score": 0.9166666666666667
+      },
+      "test": {
+        "rows": [
+          {
+            "id": "t1",
+            "language": "vi",
+            "query": "Gửi hàng trong thành phố mất mấy ngày làm việc?",
+            "sources": [
+              "test-delivery.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.6208950185481257
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.5286091579992852
+              }
+            ],
+            "retrieved_filenames": [
+              "test-delivery.txt",
+              "test-remote.txt"
+            ],
+            "max_score": 0.6208950185481257,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t2",
+            "language": "vi",
+            "query": "Đơn hàng bao nhiêu tiền thì không mất phí ship?",
+            "sources": [
+              "test-delivery.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.4797368028322633,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t3",
+            "language": "vi",
+            "query": "Nếu hộp hàng bị móp, tôi phải thông báo trong thời hạn nào?",
+            "sources": [
+              "test-delivery.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.48869957719321894,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t4",
+            "language": "vi",
+            "query": "Tôi có thể trả tiền mặt cho người giao hàng không?",
+            "sources": [
+              "test-delivery.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.5600398478679955
+              }
+            ],
+            "retrieved_filenames": [
+              "test-delivery.txt"
+            ],
+            "max_score": 0.5600398478679955,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t5",
+            "language": "vi",
+            "query": "Mỗi tuần được làm ở nhà nhiều nhất mấy ngày?",
+            "sources": [
+              "test-remote.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.45991353044475497,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t6",
+            "language": "vi",
+            "query": "Hạn chót đăng ký lịch làm từ xa tuần sau là khi nào?",
+            "sources": [
+              "test-remote.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-remote.txt",
+                "score": 0.5215295280241814
+              }
+            ],
+            "retrieved_filenames": [
+              "test-remote.txt"
+            ],
+            "max_score": 0.5215295280241814,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t7",
+            "language": "vi",
+            "query": "Khoản trợ cấp mạng Internet hằng tháng là bao nhiêu?",
+            "sources": [
+              "test-remote.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-remote.txt",
+                "score": 0.5079513527813784
+              }
+            ],
+            "retrieved_filenames": [
+              "test-remote.txt"
+            ],
+            "max_score": 0.5079513527813784,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t8",
+            "language": "vi",
+            "query": "Làm ngoài công ty cần dùng kết nối nào để truy cập hệ thống?",
+            "sources": [
+              "test-remote.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.3826064674964625,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t9",
+            "language": "vi",
+            "query": "Laptop được kiểm tra theo chu kỳ bao lâu?",
+            "sources": [
+              "test-equipment.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6631916621623692
+              }
+            ],
+            "retrieved_filenames": [
+              "test-equipment.txt"
+            ],
+            "max_score": 0.6631916621623692,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t10",
+            "language": "vi",
+            "query": "Bị mất máy tính thì phải báo cho bộ phận công nghệ trong bao lâu?",
+            "sources": [
+              "test-equipment.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.762042411669485
+              }
+            ],
+            "retrieved_filenames": [
+              "test-equipment.txt"
+            ],
+            "max_score": 0.762042411669485,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t11",
+            "language": "vi",
+            "query": "Nhân viên thôi việc phải bàn giao máy vào ngày nào?",
+            "sources": [
+              "test-equipment.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.6070201371634815
+              },
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.5625371854548966
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.5454643897634395
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.5139782954791745
+              }
+            ],
+            "retrieved_filenames": [
+              "test-equipment.txt",
+              "cal-visitors.txt",
+              "test-delivery.txt",
+              "test-remote.txt"
+            ],
+            "max_score": 0.6070201371634815,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t12",
+            "language": "vi",
+            "query": "Máy đang sửa thì có được cấp máy khác dùng tạm không?",
+            "sources": [
+              "test-equipment.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.540623253013296
+              }
+            ],
+            "retrieved_filenames": [
+              "test-equipment.txt"
+            ],
+            "max_score": 0.540623253013296,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "t13",
+            "language": "vi",
+            "query": "Thưởng Tết năm nay được bao nhiêu tháng lương?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.34690828108022986,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t14",
+            "language": "vi",
+            "query": "Mật khẩu VPN của công ty là gì?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.363458738824196,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t15",
+            "language": "vi",
+            "query": "Nếu giao hàng trễ thì công ty đền bù bao nhiêu phần trăm?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.5527373261573559
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.5491859757584581
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt",
+              "test-delivery.txt"
+            ],
+            "max_score": 0.5527373261573559,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t16",
+            "language": "vi",
+            "query": "Công ty thuê văn phòng với giá bao nhiêu một tháng?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "test-remote.txt",
+                "score": 0.5290115980486418
+              },
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.5025328493416599
+              }
+            ],
+            "retrieved_filenames": [
+              "test-remote.txt",
+              "cal-visitors.txt"
+            ],
+            "max_score": 0.5290115980486418,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t17",
+            "language": "vi",
+            "query": "Hãng và model máy tính xách tay cấp cho nhân viên là gì?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.5829026413628501
+              }
+            ],
+            "retrieved_filenames": [
+              "test-equipment.txt"
+            ],
+            "max_score": 0.5829026413628501,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "t18",
+            "language": "vi",
+            "query": "Phòng tập thể thao của công ty mở cửa lúc mấy giờ?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.3563761754860232,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          }
+        ],
+        "aggregate": {
+          "count": 18,
+          "answerable_count": 12,
+          "document_recall_at_k": 0.6666666666666666,
+          "document_mrr": 0.6666666666666666,
+          "unanswerable_count": 6,
+          "abstention_precision": 0.42857142857142855,
+          "abstention_recall": 0.5,
+          "answerable_abstention_rate": 0.3333333333333333
+        },
+        "by_language": {
+          "vi": {
+            "count": 18,
+            "answerable_count": 12,
+            "document_recall_at_k": 0.6666666666666666,
+            "document_mrr": 0.6666666666666666,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.42857142857142855,
+            "abstention_recall": 0.5,
+            "answerable_abstention_rate": 0.3333333333333333
+          }
+        }
+      }
+    }
+  ]
+}

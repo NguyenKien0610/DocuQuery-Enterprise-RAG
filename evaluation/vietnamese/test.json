@@ -1,0 +1,20 @@
+[
+ {"id":"t1","language":"vi","query":"Gửi hàng trong thành phố mất mấy ngày làm việc?","sources":["test-delivery.txt"],"reference":"2 ngày."},
+ {"id":"t2","language":"vi","query":"Đơn hàng bao nhiêu tiền thì không mất phí ship?","sources":["test-delivery.txt"],"reference":"Từ 650 nghìn đồng."},
+ {"id":"t3","language":"vi","query":"Nếu hộp hàng bị móp, tôi phải thông báo trong thời hạn nào?","sources":["test-delivery.txt"],"reference":"12 giờ sau khi nhận."},
+ {"id":"t4","language":"vi","query":"Tôi có thể trả tiền mặt cho người giao hàng không?","sources":["test-delivery.txt"],"reference":"Không; thanh toán bằng chuyển khoản."},
+ {"id":"t5","language":"vi","query":"Mỗi tuần được làm ở nhà nhiều nhất mấy ngày?","sources":["test-remote.txt"],"reference":"3 ngày."},
+ {"id":"t6","language":"vi","query":"Hạn chót đăng ký lịch làm từ xa tuần sau là khi nào?","sources":["test-remote.txt"],"reference":"Trước 15 giờ thứ sáu."},
+ {"id":"t7","language":"vi","query":"Khoản trợ cấp mạng Internet hằng tháng là bao nhiêu?","sources":["test-remote.txt"],"reference":"250 nghìn đồng."},
+ {"id":"t8","language":"vi","query":"Làm ngoài công ty cần dùng kết nối nào để truy cập hệ thống?","sources":["test-remote.txt"],"reference":"VPN."},
+ {"id":"t9","language":"vi","query":"Laptop được kiểm tra theo chu kỳ bao lâu?","sources":["test-equipment.txt"],"reference":"6 tháng."},
+ {"id":"t10","language":"vi","query":"Bị mất máy tính thì phải báo cho bộ phận công nghệ trong bao lâu?","sources":["test-equipment.txt"],"reference":"30 phút."},
+ {"id":"t11","language":"vi","query":"Nhân viên thôi việc phải bàn giao máy vào ngày nào?","sources":["test-equipment.txt"],"reference":"Ngày làm việc cuối cùng."},
+ {"id":"t12","language":"vi","query":"Máy đang sửa thì có được cấp máy khác dùng tạm không?","sources":["test-equipment.txt"],"reference":"Có, công ty cho mượn máy thay thế."},
+ {"id":"t13","language":"vi","query":"Thưởng Tết năm nay được bao nhiêu tháng lương?","sources":[],"reference":"Không có thông tin."},
+ {"id":"t14","language":"vi","query":"Mật khẩu VPN của công ty là gì?","sources":[],"reference":"Không cung cấp mật khẩu."},
+ {"id":"t15","language":"vi","query":"Nếu giao hàng trễ thì công ty đền bù bao nhiêu phần trăm?","sources":[],"reference":"Không quy định khoản đền bù."},
+ {"id":"t16","language":"vi","query":"Công ty thuê văn phòng với giá bao nhiêu một tháng?","sources":[],"reference":"Không có thông tin."},
+ {"id":"t17","language":"vi","query":"Hãng và model máy tính xách tay cấp cho nhân viên là gì?","sources":[],"reference":"Không nêu hãng hay model."},
+ {"id":"t18","language":"vi","query":"Phòng tập thể thao của công ty mở cửa lúc mấy giờ?","sources":[],"reference":"Không có thông tin."}
+]

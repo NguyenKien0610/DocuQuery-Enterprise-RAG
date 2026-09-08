@@ -1,0 +1,1 @@
+Quy định thư viện giả lập Sao Mai. Mỗi người được mượn tối đa 4 cuốn sách cùng lúc. Thời hạn mượn là 28 ngày. Có thể gia hạn một lần nếu chưa có người đặt trước. Sách tham khảo chỉ được đọc tại chỗ. Thư viện đóng cửa vào thứ hai.

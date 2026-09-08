@@ -1,0 +1,920 @@
+{
+  "schema_version": 2,
+  "experiment": "frozen_threshold_confirmation",
+  "document_level": true,
+  "k": 5,
+  "scope_note": "Offline whole-document retrieval; no answer generation. Replaying a seen set is not fresh evidence.",
+  "fingerprints": {
+    "selection_report_sha256": "ffe1a0c64b8ceec89e152abc09c62b18a976b894c24b1131b11943a0b90f7910",
+    "test_questions_sha256": "bf4cb3d91901ade8966fc6cad9e7b766ccc6def785dfc9efae4056dc4770ce2c",
+    "corpus_sha256": "95678bf66fb384b91a937e88b2702a5af137520faf5c3c25ea5c745ebe82d296"
+  },
+  "models": [
+    {
+      "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "config_commit_hash": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "max_seq_length": 256,
+      "threshold": 0.7,
+      "passage_prefix": "",
+      "query_prefix": "",
+      "document_token_lengths": [
+        102,
+        56,
+        108
+      ],
+      "test": {
+        "rows": [
+          {
+            "id": "fresh-1",
+            "language": "vi",
+            "query": "Nhân viên được mượn bao nhiêu sách cùng lúc?",
+            "sources": [
+              "confirm-library.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.6679068951930691,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.6679068951930691
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.6065891601562159
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": -0.0012047393516409072
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 1.0,
+            "ranking_top1_hit": true,
+            "error_type": "threshold_rejection"
+          },
+          {
+            "id": "fresh-2",
+            "language": "vi",
+            "query": "Sách có dấu đỏ có được đem về nhà không?",
+            "sources": [
+              "confirm-library.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.585557791923526,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.585557791923526
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.5816543603172211
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": -0.03960690882033037
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 1.0,
+            "ranking_top1_hit": true,
+            "error_type": "threshold_rejection"
+          },
+          {
+            "id": "fresh-3",
+            "language": "vi",
+            "query": "Sau chuyến công tác, hạn nộp hóa đơn là bao lâu?",
+            "sources": [
+              "confirm-expense.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.6760467734472035,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.6760467734472035
+              },
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.6736745989703403
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": -0.07657213558571038
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 0.3333333333333333,
+            "ranking_top1_hit": false,
+            "error_type": "threshold_rejection"
+          },
+          {
+            "id": "fresh-4",
+            "language": "vi",
+            "query": "Ai phải duyệt chuyến đi nước ngoài trước khi đặt vé?",
+            "sources": [
+              "confirm-expense.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.692210549742452,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.692210549742452
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.6881433667526796
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.00866322751625163
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 0.3333333333333333,
+            "ranking_top1_hit": false,
+            "error_type": "threshold_rejection"
+          },
+          {
+            "id": "fresh-5",
+            "language": "vi",
+            "query": "Bản sao lưu được giữ bao nhiêu ngày?",
+            "sources": [
+              "confirm-backup.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.7578627794802761
+              }
+            ],
+            "retrieved_filenames": [
+              "confirm-backup.txt"
+            ],
+            "max_score": 0.7578627794802761,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0,
+            "candidates": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.7578627794802761
+              },
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.6628283302340305
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.03052139576657455
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 1.0,
+            "ranking_top1_hit": true,
+            "error_type": null
+          },
+          {
+            "id": "fresh-6",
+            "language": "vi",
+            "query": "Lịch diễn tập khôi phục dữ liệu là khi nào?",
+            "sources": [
+              "confirm-backup.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.4956698876129093,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.4956698876129093
+              },
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.4058571654414401
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": -0.023333024280248856
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 1.0,
+            "ranking_top1_hit": true,
+            "error_type": "threshold_rejection"
+          },
+          {
+            "id": "fresh-7",
+            "language": "vi",
+            "query": "Phí phạt trả sách trễ mỗi ngày là bao nhiêu?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.5188745597349784,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.5188745597349784
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.5146954325185316
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": -0.0355966286393098
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          },
+          {
+            "id": "fresh-8",
+            "language": "vi",
+            "query": "Mức phụ cấp tiền ăn khi công tác là bao nhiêu?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.5672353755203872,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.5672353755203872
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.5497125329431183
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": -0.05328782825246986
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          },
+          {
+            "id": "fresh-9",
+            "language": "vi",
+            "query": "Bản sao lưu sử dụng thuật toán mã hóa nào?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.6383251979207323,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.6383251979207323
+              },
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.5068012349322505
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.03345935759679415
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          },
+          {
+            "id": "fresh-10",
+            "language": "vi",
+            "query": "Nhân viên có bao nhiêu ngày nghỉ thai sản?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.6097167861802016,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.6097167861802016
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.5786380182834877
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": -0.059657294826484616
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          },
+          {
+            "id": "fresh-11",
+            "language": "vi",
+            "query": "Công ty có hỗ trợ học phí cho con nhân viên không?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.5693883361269974,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.5693883361269974
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.5167433995217674
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": -0.051408396718792604
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          },
+          {
+            "id": "fresh-12",
+            "language": "vi",
+            "query": "Mật khẩu mạng khách ở văn phòng là gì?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.5973115991372299,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.5973115991372299
+              },
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.49404779593670123
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": -0.028877533501858448
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          }
+        ],
+        "aggregate": {
+          "count": 12,
+          "answerable_count": 6,
+          "document_recall_at_k": 0.16666666666666666,
+          "document_mrr": 0.16666666666666666,
+          "ranking_recall_at_k": 1.0,
+          "ranking_mrr": 0.7777777777777778,
+          "ranking_top1_accuracy": 0.6666666666666666,
+          "error_counts": {
+            "threshold_rejection": 5
+          },
+          "unanswerable_count": 6,
+          "abstention_precision": 0.5454545454545454,
+          "abstention_recall": 1.0,
+          "answerable_abstention_rate": 0.8333333333333334
+        },
+        "by_language": {
+          "vi": {
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.16666666666666666,
+            "document_mrr": 0.16666666666666666,
+            "ranking_recall_at_k": 1.0,
+            "ranking_mrr": 0.7777777777777778,
+            "ranking_top1_accuracy": 0.6666666666666666,
+            "error_counts": {
+              "threshold_rejection": 5
+            },
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5454545454545454,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 0.8333333333333334
+          }
+        }
+      }
+    },
+    {
+      "model_id": "intfloat/multilingual-e5-small",
+      "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "config_commit_hash": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "max_seq_length": 512,
+      "threshold": 0.84,
+      "passage_prefix": "passage: ",
+      "query_prefix": "query: ",
+      "document_token_lengths": [
+        69,
+        71,
+        68
+      ],
+      "test": {
+        "rows": [
+          {
+            "id": "fresh-1",
+            "language": "vi",
+            "query": "Nhân viên được mượn bao nhiêu sách cùng lúc?",
+            "sources": [
+              "confirm-library.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8832021942429777
+              }
+            ],
+            "retrieved_filenames": [
+              "confirm-library.txt"
+            ],
+            "max_score": 0.8832021942429777,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8832021942429777
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.7949290678204095
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.7258532146664672
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 1.0,
+            "ranking_top1_hit": true,
+            "error_type": null
+          },
+          {
+            "id": "fresh-2",
+            "language": "vi",
+            "query": "Sách có dấu đỏ có được đem về nhà không?",
+            "sources": [
+              "confirm-library.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8537442443656285
+              }
+            ],
+            "retrieved_filenames": [
+              "confirm-library.txt"
+            ],
+            "max_score": 0.8537442443656285,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8537442443656285
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.787999435974585
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.7168744836501394
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 1.0,
+            "ranking_top1_hit": true,
+            "error_type": null
+          },
+          {
+            "id": "fresh-3",
+            "language": "vi",
+            "query": "Sau chuyến công tác, hạn nộp hóa đơn là bao lâu?",
+            "sources": [
+              "confirm-expense.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.8150829511908285,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8150829511908285
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.792043056930924
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.7825957667569652
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 0.3333333333333333,
+            "ranking_top1_hit": false,
+            "error_type": "threshold_rejection"
+          },
+          {
+            "id": "fresh-4",
+            "language": "vi",
+            "query": "Ai phải duyệt chuyến đi nước ngoài trước khi đặt vé?",
+            "sources": [
+              "confirm-expense.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.8035146477157598,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8035146477157598
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.7847983972843402
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.7555316046311309
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 0.3333333333333333,
+            "ranking_top1_hit": false,
+            "error_type": "threshold_rejection"
+          },
+          {
+            "id": "fresh-5",
+            "language": "vi",
+            "query": "Bản sao lưu được giữ bao nhiêu ngày?",
+            "sources": [
+              "confirm-backup.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.8935021828603714
+              },
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8462198825275495
+              }
+            ],
+            "retrieved_filenames": [
+              "confirm-backup.txt",
+              "confirm-library.txt"
+            ],
+            "max_score": 0.8935021828603714,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0,
+            "candidates": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.8935021828603714
+              },
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8462198825275495
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.7284051483458198
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 1.0,
+            "ranking_top1_hit": true,
+            "error_type": null
+          },
+          {
+            "id": "fresh-6",
+            "language": "vi",
+            "query": "Lịch diễn tập khôi phục dữ liệu là khi nào?",
+            "sources": [
+              "confirm-backup.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.8627708936258931
+              }
+            ],
+            "retrieved_filenames": [
+              "confirm-backup.txt"
+            ],
+            "max_score": 0.8627708936258931,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0,
+            "candidates": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.8627708936258931
+              },
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.7828058680227757
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.6970880780402758
+              }
+            ],
+            "ranking_recall": 1.0,
+            "ranking_reciprocal_rank": 1.0,
+            "ranking_top1_hit": true,
+            "error_type": null
+          },
+          {
+            "id": "fresh-7",
+            "language": "vi",
+            "query": "Phí phạt trả sách trễ mỗi ngày là bao nhiêu?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8477719556365466
+              }
+            ],
+            "retrieved_filenames": [
+              "confirm-library.txt"
+            ],
+            "max_score": 0.8477719556365466,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8477719556365466
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.7970146186825421
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.7648629753835585
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": "unsupported_context"
+          },
+          {
+            "id": "fresh-8",
+            "language": "vi",
+            "query": "Mức phụ cấp tiền ăn khi công tác là bao nhiêu?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.80143472608683,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.80143472608683
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.7922322100517762
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.7673248357254249
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          },
+          {
+            "id": "fresh-9",
+            "language": "vi",
+            "query": "Bản sao lưu sử dụng thuật toán mã hóa nào?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.8349329561397947,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.8349329561397947
+              },
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.7837257163622608
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.6876184773144094
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          },
+          {
+            "id": "fresh-10",
+            "language": "vi",
+            "query": "Nhân viên có bao nhiêu ngày nghỉ thai sản?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.8227649583946847,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8227649583946847
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.8051751687763935
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.7347358244253763
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          },
+          {
+            "id": "fresh-11",
+            "language": "vi",
+            "query": "Công ty có hỗ trợ học phí cho con nhân viên không?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.8128021719329113,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.8128021719329113
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.7719875371518917
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.7393603593790512
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          },
+          {
+            "id": "fresh-12",
+            "language": "vi",
+            "query": "Mật khẩu mạng khách ở văn phòng là gì?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.799867907056502,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0,
+            "candidates": [
+              {
+                "filename": "confirm-library.txt",
+                "score": 0.799867907056502
+              },
+              {
+                "filename": "confirm-backup.txt",
+                "score": 0.777430896800656
+              },
+              {
+                "filename": "confirm-expense.txt",
+                "score": 0.7133365573994689
+              }
+            ],
+            "ranking_recall": 0.0,
+            "ranking_reciprocal_rank": 0.0,
+            "ranking_top1_hit": false,
+            "error_type": null
+          }
+        ],
+        "aggregate": {
+          "count": 12,
+          "answerable_count": 6,
+          "document_recall_at_k": 0.6666666666666666,
+          "document_mrr": 0.6666666666666666,
+          "ranking_recall_at_k": 1.0,
+          "ranking_mrr": 0.7777777777777778,
+          "ranking_top1_accuracy": 0.6666666666666666,
+          "error_counts": {
+            "threshold_rejection": 2,
+            "unsupported_context": 1
+          },
+          "unanswerable_count": 6,
+          "abstention_precision": 0.7142857142857143,
+          "abstention_recall": 0.8333333333333334,
+          "answerable_abstention_rate": 0.3333333333333333
+        },
+        "by_language": {
+          "vi": {
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.6666666666666666,
+            "document_mrr": 0.6666666666666666,
+            "ranking_recall_at_k": 1.0,
+            "ranking_mrr": 0.7777777777777778,
+            "ranking_top1_accuracy": 0.6666666666666666,
+            "error_counts": {
+              "threshold_rejection": 2,
+              "unsupported_context": 1
+            },
+            "unanswerable_count": 6,
+            "abstention_precision": 0.7142857142857143,
+            "abstention_recall": 0.8333333333333334,
+            "answerable_abstention_rate": 0.3333333333333333
+          }
+        }
+      }
+    }
+  ],
+  "promotion_gate": {
+    "rule": "Strictly improve Vietnamese recall without reducing unanswerable abstention",
+    "evaluable": true,
+    "passed": false,
+    "baseline_vi_recall": 0.16666666666666666,
+    "candidate_vi_recall": 0.6666666666666666,
+    "baseline_abstention": 1.0,
+    "candidate_abstention": 0.8333333333333334
+  }
+}

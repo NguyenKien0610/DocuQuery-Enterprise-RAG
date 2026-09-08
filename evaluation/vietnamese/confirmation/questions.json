@@ -1,0 +1,14 @@
+[
+  {"id":"fresh-1","language":"vi","query":"Nhân viên được mượn bao nhiêu sách cùng lúc?","sources":["confirm-library.txt"]},
+  {"id":"fresh-2","language":"vi","query":"Sách có dấu đỏ có được đem về nhà không?","sources":["confirm-library.txt"]},
+  {"id":"fresh-3","language":"vi","query":"Sau chuyến công tác, hạn nộp hóa đơn là bao lâu?","sources":["confirm-expense.txt"]},
+  {"id":"fresh-4","language":"vi","query":"Ai phải duyệt chuyến đi nước ngoài trước khi đặt vé?","sources":["confirm-expense.txt"]},
+  {"id":"fresh-5","language":"vi","query":"Bản sao lưu được giữ bao nhiêu ngày?","sources":["confirm-backup.txt"]},
+  {"id":"fresh-6","language":"vi","query":"Lịch diễn tập khôi phục dữ liệu là khi nào?","sources":["confirm-backup.txt"]},
+  {"id":"fresh-7","language":"vi","query":"Phí phạt trả sách trễ mỗi ngày là bao nhiêu?","sources":[]},
+  {"id":"fresh-8","language":"vi","query":"Mức phụ cấp tiền ăn khi công tác là bao nhiêu?","sources":[]},
+  {"id":"fresh-9","language":"vi","query":"Bản sao lưu sử dụng thuật toán mã hóa nào?","sources":[]},
+  {"id":"fresh-10","language":"vi","query":"Nhân viên có bao nhiêu ngày nghỉ thai sản?","sources":[]},
+  {"id":"fresh-11","language":"vi","query":"Công ty có hỗ trợ học phí cho con nhân viên không?","sources":[]},
+  {"id":"fresh-12","language":"vi","query":"Mật khẩu mạng khách ở văn phòng là gì?","sources":[]}
+]

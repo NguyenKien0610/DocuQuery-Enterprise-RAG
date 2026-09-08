@@ -1,0 +1,1 @@
+Thư viện nội bộ Sao Mai cho phép nhân viên mượn tối đa ba cuốn sách trong hai mươi mốt ngày. Muốn gia hạn, người mượn phải gửi yêu cầu cho thủ thư trước ngày trả hai ngày. Tài liệu tham khảo đóng dấu đỏ chỉ được đọc tại phòng đọc, không được mang ra ngoài.

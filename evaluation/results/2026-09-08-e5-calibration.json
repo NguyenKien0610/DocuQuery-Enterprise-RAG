@@ -1,0 +1,995 @@
+{
+  "schema_version": 1,
+  "experiment": "embedding_retrieval_comparison",
+  "document_level": true,
+  "scope_note": "Full TXT documents are embedded as single vectors; this is not the production chunk pipeline.",
+  "k": 5,
+  "threshold_grid": [
+    0.2,
+    0.3,
+    0.35,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.75,
+    0.8,
+    0.82,
+    0.84,
+    0.86,
+    0.88,
+    0.9,
+    0.92,
+    0.94,
+    0.96,
+    0.98
+  ],
+  "fingerprints": {
+    "corpus_sha256": "97f7c7f9a29e0680db21c6f90b882e3cfd714b1420df9dd53fd5cda9c9d8eb85",
+    "calibration_questions_sha256": "8ef2c6e32c1eae8306deb1b0eeec5fc30c9f2d9fe1acd0af971256f5a6c7b6e4",
+    "test_questions_sha256": null
+  },
+  "models": [
+    {
+      "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "config_commit_hash": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "max_seq_length": 256,
+      "document_token_lengths": [
+        99,
+        107,
+        113,
+        119,
+        127,
+        121
+      ],
+      "passage_prefix": "",
+      "query_prefix": "",
+      "calibration": {
+        "rows": [
+          {
+            "id": "c1",
+            "language": "vi",
+            "query": "Mua hàng giá trị lớn hơn tám triệu cần ai đồng ý?",
+            "sources": [
+              "cal-purchasing.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.7622339817753608
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.729423566724058
+              }
+            ],
+            "retrieved_filenames": [
+              "test-delivery.txt",
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.7622339817753608,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 0.5
+          },
+          {
+            "id": "c2",
+            "language": "vi",
+            "query": "Nhà cung cấp chờ thanh toán bao lâu sau khi gửi đủ hóa đơn?",
+            "sources": [
+              "cal-purchasing.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.7367924600946761
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.7367924600946761,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c3",
+            "language": "vi",
+            "query": "Một người được giữ tối đa bao nhiêu sách mượn?",
+            "sources": [
+              "cal-library.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-library.txt",
+                "score": 0.7314453668944971
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-library.txt"
+            ],
+            "max_score": 0.7314453668944971,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c4",
+            "language": "vi",
+            "query": "Thư viện nghỉ vào ngày nào trong tuần?",
+            "sources": [
+              "cal-library.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.6101916704280496,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c5",
+            "language": "vi",
+            "query": "Khách phải hẹn trước mấy ngày làm việc?",
+            "sources": [
+              "cal-visitors.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.6479709358105792,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c6",
+            "language": "vi",
+            "query": "Rời văn phòng rồi có được giữ thẻ khách không?",
+            "sources": [
+              "cal-visitors.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.7272591961919007
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-visitors.txt"
+            ],
+            "max_score": 0.7272591961919007,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c7",
+            "language": "vi",
+            "query": "Lãi suất cho vay mua ô tô là bao nhiêu?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.6200615062868492,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c8",
+            "language": "vi",
+            "query": "Sao Mai có bao nhiêu chi nhánh ở châu Âu?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.5502807639234666,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c9",
+            "language": "vi",
+            "query": "Phí phạt khi trả sách muộn là bao nhiêu tiền mỗi ngày?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.6269131152373091,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c10",
+            "language": "vi",
+            "query": "Số điện thoại cá nhân của trưởng phòng mua sắm là gì?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.7685186879895525
+              },
+              {
+                "filename": "cal-library.txt",
+                "score": 0.7132320759650912
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.7037153672217114
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt",
+              "cal-library.txt",
+              "test-equipment.txt"
+            ],
+            "max_score": 0.7685186879895525,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c11",
+            "language": "vi",
+            "query": "Công ty có hỗ trợ tiêm phòng cúm không?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.7053590384461381
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.7053590384461381,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c12",
+            "language": "vi",
+            "query": "Ai là kiến trúc sư thiết kế tòa nhà văn phòng?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.56273354050193,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          }
+        ],
+        "aggregate": {
+          "count": 12,
+          "answerable_count": 6,
+          "document_recall_at_k": 0.6666666666666666,
+          "document_mrr": 0.5833333333333334,
+          "unanswerable_count": 6,
+          "abstention_precision": 0.6666666666666666,
+          "abstention_recall": 0.6666666666666666,
+          "answerable_abstention_rate": 0.3333333333333333
+        },
+        "by_language": {
+          "vi": {
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.6666666666666666,
+            "document_mrr": 0.5833333333333334,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.6666666666666666,
+            "abstention_recall": 0.6666666666666666,
+            "answerable_abstention_rate": 0.3333333333333333
+          }
+        },
+        "threshold": 0.7,
+        "grid": [
+          0.2,
+          0.3,
+          0.35,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.75,
+          0.8,
+          0.82,
+          0.84,
+          0.86,
+          0.88,
+          0.9,
+          0.92,
+          0.94,
+          0.96,
+          0.98
+        ],
+        "selection_score": 0.6666666666666666,
+        "curve": [
+          {
+            "threshold": 0.2,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 0.9166666666666666,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.3,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 0.9166666666666666,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.35,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 0.9166666666666666,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.4,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 0.9166666666666666,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.5,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 0.9166666666666666,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.6,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 0.9166666666666666,
+            "unanswerable_count": 6,
+            "abstention_precision": 1.0,
+            "abstention_recall": 0.3333333333333333,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.7,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.6666666666666666,
+            "document_mrr": 0.5833333333333334,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.6666666666666666,
+            "abstention_recall": 0.6666666666666666,
+            "answerable_abstention_rate": 0.3333333333333333
+          },
+          {
+            "threshold": 0.75,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 0.8333333333333334,
+            "answerable_abstention_rate": 0.8333333333333334
+          },
+          {
+            "threshold": 0.8,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.82,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.84,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.86,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.88,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.9,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.92,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.94,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.96,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.98,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          }
+        ]
+      },
+      "test": null
+    },
+    {
+      "model_id": "intfloat/multilingual-e5-small",
+      "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "config_commit_hash": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "max_seq_length": 512,
+      "document_token_lengths": [
+        66,
+        66,
+        73,
+        75,
+        81,
+        80
+      ],
+      "passage_prefix": "passage: ",
+      "query_prefix": "query: ",
+      "calibration": {
+        "rows": [
+          {
+            "id": "c1",
+            "language": "vi",
+            "query": "Mua hàng giá trị lớn hơn tám triệu cần ai đồng ý?",
+            "sources": [
+              "cal-purchasing.txt"
+            ],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.8399530383814151,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c2",
+            "language": "vi",
+            "query": "Nhà cung cấp chờ thanh toán bao lâu sau khi gửi đủ hóa đơn?",
+            "sources": [
+              "cal-purchasing.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.8619560863809768
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.8619560863809768,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c3",
+            "language": "vi",
+            "query": "Một người được giữ tối đa bao nhiêu sách mượn?",
+            "sources": [
+              "cal-library.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-library.txt",
+                "score": 0.8742361381633637
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-library.txt"
+            ],
+            "max_score": 0.8742361381633637,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c4",
+            "language": "vi",
+            "query": "Thư viện nghỉ vào ngày nào trong tuần?",
+            "sources": [
+              "cal-library.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-library.txt",
+                "score": 0.8577912195503413
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-library.txt"
+            ],
+            "max_score": 0.8577912195503413,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c5",
+            "language": "vi",
+            "query": "Khách phải hẹn trước mấy ngày làm việc?",
+            "sources": [
+              "cal-visitors.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.8771043143699151
+              },
+              {
+                "filename": "test-remote.txt",
+                "score": 0.8639592842600754
+              },
+              {
+                "filename": "test-delivery.txt",
+                "score": 0.8473838233562089
+              },
+              {
+                "filename": "test-equipment.txt",
+                "score": 0.8457932921729205
+              },
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.8445290114499069
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-visitors.txt",
+              "test-remote.txt",
+              "test-delivery.txt",
+              "test-equipment.txt",
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.8771043143699151,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c6",
+            "language": "vi",
+            "query": "Rời văn phòng rồi có được giữ thẻ khách không?",
+            "sources": [
+              "cal-visitors.txt"
+            ],
+            "retrieved": [
+              {
+                "filename": "cal-visitors.txt",
+                "score": 0.8569915209106842
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-visitors.txt"
+            ],
+            "max_score": 0.8569915209106842,
+            "abstained": false,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+          },
+          {
+            "id": "c7",
+            "language": "vi",
+            "query": "Lãi suất cho vay mua ô tô là bao nhiêu?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.8031448412673418,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c8",
+            "language": "vi",
+            "query": "Sao Mai có bao nhiêu chi nhánh ở châu Âu?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.836846344425765,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c9",
+            "language": "vi",
+            "query": "Phí phạt khi trả sách muộn là bao nhiêu tiền mỗi ngày?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.837043833731107,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c10",
+            "language": "vi",
+            "query": "Số điện thoại cá nhân của trưởng phòng mua sắm là gì?",
+            "sources": [],
+            "retrieved": [
+              {
+                "filename": "cal-purchasing.txt",
+                "score": 0.8471812214223013
+              }
+            ],
+            "retrieved_filenames": [
+              "cal-purchasing.txt"
+            ],
+            "max_score": 0.8471812214223013,
+            "abstained": false,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c11",
+            "language": "vi",
+            "query": "Công ty có hỗ trợ tiêm phòng cúm không?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.8014857546326837,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          },
+          {
+            "id": "c12",
+            "language": "vi",
+            "query": "Ai là kiến trúc sư thiết kế tòa nhà văn phòng?",
+            "sources": [],
+            "retrieved": [],
+            "retrieved_filenames": [],
+            "max_score": 0.7860556235309535,
+            "abstained": true,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+          }
+        ],
+        "aggregate": {
+          "count": 12,
+          "answerable_count": 6,
+          "document_recall_at_k": 0.8333333333333334,
+          "document_mrr": 0.8333333333333334,
+          "unanswerable_count": 6,
+          "abstention_precision": 0.8333333333333334,
+          "abstention_recall": 0.8333333333333334,
+          "answerable_abstention_rate": 0.16666666666666666
+        },
+        "by_language": {
+          "vi": {
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.8333333333333334,
+            "document_mrr": 0.8333333333333334,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.8333333333333334,
+            "abstention_recall": 0.8333333333333334,
+            "answerable_abstention_rate": 0.16666666666666666
+          }
+        },
+        "threshold": 0.84,
+        "grid": [
+          0.2,
+          0.3,
+          0.35,
+          0.4,
+          0.5,
+          0.6,
+          0.7,
+          0.75,
+          0.8,
+          0.82,
+          0.84,
+          0.86,
+          0.88,
+          0.9,
+          0.92,
+          0.94,
+          0.96,
+          0.98
+        ],
+        "selection_score": 0.8333333333333334,
+        "curve": [
+          {
+            "threshold": 0.2,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 1.0,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.3,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 1.0,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.35,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 1.0,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.4,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 1.0,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.5,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 1.0,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.6,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 1.0,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.7,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 1.0,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.75,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 1.0,
+            "unanswerable_count": 6,
+            "abstention_precision": null,
+            "abstention_recall": 0.0,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.8,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 1.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 1.0,
+            "abstention_recall": 0.16666666666666666,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.82,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 1.0,
+            "document_mrr": 1.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 1.0,
+            "abstention_recall": 0.5,
+            "answerable_abstention_rate": 0.0
+          },
+          {
+            "threshold": 0.84,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.8333333333333334,
+            "document_mrr": 0.8333333333333334,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.8333333333333334,
+            "abstention_recall": 0.8333333333333334,
+            "answerable_abstention_rate": 0.16666666666666666
+          },
+          {
+            "threshold": 0.86,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.5,
+            "document_mrr": 0.5,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.6666666666666666,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 0.5
+          },
+          {
+            "threshold": 0.88,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.9,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.92,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.94,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.96,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          },
+          {
+            "threshold": 0.98,
+            "count": 12,
+            "answerable_count": 6,
+            "document_recall_at_k": 0.0,
+            "document_mrr": 0.0,
+            "unanswerable_count": 6,
+            "abstention_precision": 0.5,
+            "abstention_recall": 1.0,
+            "answerable_abstention_rate": 1.0
+          }
+        ]
+      },
+      "test": null
+    }
+  ]
+}

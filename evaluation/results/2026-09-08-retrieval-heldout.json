@@ -1,0 +1,616 @@
+{
+  "evaluated_at": "2026-09-08T12:07:34.024261+00:00",
+  "workspace": "reliability-eval",
+  "k": 5,
+  "concurrency": 1,
+  "schema_version": 2,
+  "retrieval_only": true,
+  "use_cache": false,
+  "reranker": false,
+  "answerable_count": 18,
+  "document_recall_at_k": 0.2222222222222222,
+  "document_mrr": 0.2222222222222222,
+  "unanswerable_count": 6,
+  "abstention_precision": 0.2631578947368421,
+  "abstention_recall": 0.8333333333333334,
+  "answerable_abstention_rate": 0.7777777777777778,
+  "failure_rate": 0,
+  "status_counts": {
+    "insufficient_context": 19,
+    "retrieved": 5
+  },
+  "generated_p50_seconds": null,
+  "generated_p95_seconds": null,
+  "p50_seconds": 2.0822716999996373,
+  "p95_seconds": 2.1019347799996924,
+  "requests_per_second": 0.3971375503545155,
+  "results": [
+    {
+      "id": "vi-01",
+      "language": "vi",
+      "query": "Mỗi năm nhân viên được nghỉ phép hưởng lương bao nhiêu ngày?",
+      "sources": [
+        "leave.txt"
+      ],
+      "reference": "20 ngày mỗi năm.",
+      "response": {
+        "query": "Mỗi năm nhân viên được nghỉ phép hưởng lương bao nhiêu ngày?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 12.643425999999636,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-02",
+      "language": "vi",
+      "query": "Có thể chuyển tối đa mấy ngày phép chưa dùng sang năm sau?",
+      "sources": [
+        "leave.txt"
+      ],
+      "reference": "5 ngày.",
+      "response": {
+        "query": "Có thể chuyển tối đa mấy ngày phép chưa dùng sang năm sau?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.09552100000019,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-03",
+      "language": "vi",
+      "query": "Công ty thanh toán tiền khách sạn tối đa bao nhiêu một đêm?",
+      "sources": [
+        "expenses.txt"
+      ],
+      "reference": "120 USD một đêm.",
+      "response": {
+        "query": "Công ty thanh toán tiền khách sạn tối đa bao nhiêu một đêm?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.083761500000037,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-04",
+      "language": "vi",
+      "query": "Sau chuyến công tác, hạn nộp báo cáo chi phí là bao lâu?",
+      "sources": [
+        "expenses.txt"
+      ],
+      "reference": "Trong vòng 14 ngày.",
+      "response": {
+        "query": "Sau chuyến công tác, hạn nộp báo cáo chi phí là bao lâu?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.064491099999941,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-05",
+      "language": "vi",
+      "query": "Mật khẩu phải dài ít nhất bao nhiêu ký tự?",
+      "sources": [
+        "security.txt"
+      ],
+      "reference": "14 ký tự.",
+      "response": {
+        "query": "Mật khẩu phải dài ít nhất bao nhiêu ký tự?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.046763600000304,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-06",
+      "language": "vi",
+      "query": "Dữ liệu sao lưu được giữ lại bao lâu?",
+      "sources": [
+        "security.txt"
+      ],
+      "reference": "90 ngày.",
+      "response": {
+        "query": "Dữ liệu sao lưu được giữ lại bao lâu?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.0754500000002736,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-07",
+      "language": "vi",
+      "query": "Sự cố nghiêm trọng có mục tiêu phản hồi trong bao nhiêu phút?",
+      "sources": [
+        "support.txt"
+      ],
+      "reference": "15 phút.",
+      "response": {
+        "query": "Sự cố nghiêm trọng có mục tiêu phản hồi trong bao nhiêu phút?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.0880982999997286,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-08",
+      "language": "vi",
+      "query": "Gói dịch vụ nào hỗ trợ cả cuối tuần?",
+      "sources": [
+        "support.txt"
+      ],
+      "reference": "Gói Premium.",
+      "response": {
+        "query": "Gói dịch vụ nào hỗ trợ cả cuối tuần?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.090877100000398,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-09",
+      "language": "vi",
+      "query": "Ngân sách đào tạo hằng năm cho mỗi nhân viên là bao nhiêu?",
+      "sources": [
+        "training.txt"
+      ],
+      "reference": "800 USD.",
+      "response": {
+        "query": "Ngân sách đào tạo hằng năm cho mỗi nhân viên là bao nhiêu?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.0831571999997323,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-10",
+      "language": "vi",
+      "query": "Ai phải phê duyệt yêu cầu đào tạo?",
+      "sources": [
+        "training.txt"
+      ],
+      "reference": "Quản lý trực tiếp.",
+      "response": {
+        "query": "Ai phải phê duyệt yêu cầu đào tạo?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.0703325999993467,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-11",
+      "language": "vi",
+      "query": "Thời hạn bảo hành phần cứng tính từ ngày mua là bao lâu?",
+      "sources": [
+        "warranty.txt"
+      ],
+      "reference": "24 tháng.",
+      "response": {
+        "query": "Thời hạn bảo hành phần cứng tính từ ngày mua là bao lâu?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.0591927000004944,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "vi-12",
+      "language": "vi",
+      "query": "Hư hỏng do vô tình vào nước có được bảo hành không?",
+      "sources": [
+        "warranty.txt"
+      ],
+      "reference": "Không, trường hợp này bị loại trừ.",
+      "response": {
+        "query": "Hư hỏng do vô tình vào nước có được bảo hành không?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.0813861999995424,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "en-01",
+      "language": "en",
+      "query": "If I get sick for four days in a row, what evidence must I provide?",
+      "sources": [
+        "leave.txt"
+      ],
+      "reference": "A certificate is required after three consecutive sick days.",
+      "response": {
+        "query": "If I get sick for four days in a row, what evidence must I provide?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "leave.txt",
+            "document_id": "e2ce30fc9d0b1238340280a93ea1918377b66a7705280270648038effc001342",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "DocuQuery fictional company leave policy. Employees receive 20 paid leave days per calendar year. Requests must be submitted 7 days before leave. At most 5 unused days carry over to the next year. Sick leave requires a certificate after 3 consecutive days. The leave year begins on January 1."
+          }
+        ]
+      },
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "failed": false,
+      "seconds": 2.076884400000381,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "en-02",
+      "language": "en",
+      "query": "Who signs off a business trip outside the country?",
+      "sources": [
+        "expenses.txt"
+      ],
+      "reference": "The finance director.",
+      "response": {
+        "query": "Who signs off a business trip outside the country?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.054192800000237,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "en-03",
+      "language": "en",
+      "query": "How often should access to production be reviewed?",
+      "sources": [
+        "security.txt"
+      ],
+      "reference": "Every three months.",
+      "response": {
+        "query": "How often should access to production be reviewed?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.08395180000025,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "en-04",
+      "language": "en",
+      "query": "Where can a customer email the help desk?",
+      "sources": [
+        "support.txt"
+      ],
+      "reference": "help@example.test.",
+      "response": {
+        "query": "Where can a customer email the help desk?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "support.txt",
+            "document_id": "c1fef76013d4faeda0a1700e26a50b37b5f7c3588196cebfdefde588c62af593",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "DocuQuery fictional company support policy. Standard support operates from 08:00 to 18:00 UTC on weekdays. Critical incidents have a 15 minute response target. Standard tickets have a 2 business day response target. The support email is help@example.test. Premium plans include weekend support."
+          }
+        ]
+      },
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "failed": false,
+      "seconds": 2.086781400000291,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "en-05",
+      "language": "en",
+      "query": "Do I need to pass a certification exam before its fee is reimbursed?",
+      "sources": [
+        "training.txt"
+      ],
+      "reference": "Yes, reimbursement follows passing.",
+      "response": {
+        "query": "Do I need to pass a certification exam before its fee is reimbursed?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "training.txt",
+            "document_id": "e8851066da38b6858f8add8762783a0989def5b07ef28ef5c68e3f37a4e1d5b4",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "DocuQuery fictional company training policy. Each employee receives an annual training budget of 800 dollars. Mandatory onboarding takes 5 days. Certification exam fees are reimbursed after passing. Employees can use 4 paid study days each year. Training requests require approval from the direct manager."
+          }
+        ]
+      },
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "failed": false,
+      "seconds": 2.091090599999916,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "en-06",
+      "language": "en",
+      "query": "What document must a customer show to claim warranty coverage?",
+      "sources": [
+        "warranty.txt"
+      ],
+      "reference": "Proof of purchase.",
+      "response": {
+        "query": "What document must a customer show to claim warranty coverage?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "warranty.txt",
+            "document_id": "2688d288524743f55476d406a226348a658deefe87ee4b77ce2a7ff44bca4d4a",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "DocuQuery fictional company product warranty. Hardware warranty lasts 24 months from purchase. Customers may return products within 30 days. Accidental water damage is excluded. Repairs normally take 10 business days. Proof of purchase is required for warranty claims."
+          },
+          {
+            "source_file": "support.txt",
+            "document_id": "c1fef76013d4faeda0a1700e26a50b37b5f7c3588196cebfdefde588c62af593",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "DocuQuery fictional company support policy. Standard support operates from 08:00 to 18:00 UTC on weekdays. Critical incidents have a 15 minute response target. Standard tickets have a 2 business day response target. The support email is help@example.test. Premium plans include weekend support."
+          }
+        ]
+      },
+      "recall": 1.0,
+      "reciprocal_rank": 1.0,
+      "failed": false,
+      "seconds": 2.094087899999977,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "none-01",
+      "language": "vi",
+      "query": "Lương tháng của giám đốc tài chính là bao nhiêu?",
+      "sources": [],
+      "reference": "Tài liệu không cung cấp mức lương.",
+      "response": {
+        "query": "Lương tháng của giám đốc tài chính là bao nhiêu?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.0604584000002433,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "none-02",
+      "language": "vi",
+      "query": "Địa chỉ đường phố của trung tâm bảo hành ở Hà Nội là gì?",
+      "sources": [],
+      "reference": "Tài liệu không có địa chỉ trung tâm bảo hành.",
+      "response": {
+        "query": "Địa chỉ đường phố của trung tâm bảo hành ở Hà Nội là gì?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.061049100000673,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "none-03",
+      "language": "vi",
+      "query": "Nhân viên được nghỉ thai sản bao nhiêu tuần?",
+      "sources": [],
+      "reference": "Tài liệu không quy định nghỉ thai sản.",
+      "response": {
+        "query": "Nhân viên được nghỉ thai sản bao nhiêu tuần?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.0758857000000717,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "none-04",
+      "language": "en",
+      "query": "What is the reimbursement limit for dental surgery?",
+      "sources": [],
+      "reference": "Dental coverage is not specified.",
+      "response": {
+        "query": "What is the reimbursement limit for dental surgery?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "expenses.txt",
+            "document_id": "dd8b862eee55a0f95ad7f1743f973696f766a24924ab87029e0d7f3276dd9306",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "DocuQuery fictional company expense policy. The hotel allowance is 120 dollars per night. Meal reimbursement is capped at 35 dollars per day. Expense reports are due within 14 days after travel. Receipts are required for purchases above 10 dollars. International travel needs approval from the finance director."
+          }
+        ]
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.10274279999976,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "none-05",
+      "language": "en",
+      "query": "Which encryption algorithm protects the backups?",
+      "sources": [],
+      "reference": "The backup encryption algorithm is not specified.",
+      "response": {
+        "query": "Which encryption algorithm protects the backups?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.0584384999992835,
+      "faithfulness": null,
+      "answer_relevance": null
+    },
+    {
+      "id": "none-06",
+      "language": "en",
+      "query": "What was the company's revenue last quarter?",
+      "sources": [],
+      "reference": "Revenue is not stated in this corpus.",
+      "response": {
+        "query": "What was the company's revenue last quarter?",
+        "answer": "Không đủ thông tin trong tài liệu để trả lời câu hỏi này.",
+        "cached": false,
+        "status": "insufficient_context",
+        "error_code": null,
+        "context": []
+      },
+      "recall": 0.0,
+      "reciprocal_rank": 0.0,
+      "failed": false,
+      "seconds": 2.0973559999993086,
+      "faithfulness": null,
+      "answer_relevance": null
+    }
+  ]
+}
