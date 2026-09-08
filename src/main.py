@@ -15,6 +15,8 @@ from src.rag_engine import (
     WorkspaceBusyError,
     ask_question,
     ensure_qdrant_collection,
+    qdrant_client,
+    redis_client,
     register_task_workspace,
     remove_task_workspace,
     reset_workspace,
@@ -37,6 +39,7 @@ MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
 MAX_EXTRACTED_BYTES = int(os.getenv("MAX_EXTRACTED_BYTES", str(100 * 1024 * 1024)))
 SUPPORTED_UPLOAD_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -45,6 +48,23 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="DocuQuery v2.0 - Enterprise RAG API", lifespan=lifespan)
+
+
+@app.get("/health/live", include_in_schema=False)
+def health_live() -> dict:
+    return {"status": "alive"}
+
+
+@app.get("/health/ready", include_in_schema=False)
+def health_ready() -> dict:
+    try:
+        if not os.getenv("DOCUQUERY_API_KEY"):
+            raise ValueError("Missing authentication configuration")
+        redis_client.ping()
+        qdrant_client.get_collections()
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Service is not ready.") from exc
+    return {"status": "ready"}
 
 
 def _list_uploaded_documents(workspace_id: str) -> list[str]:
@@ -154,7 +174,10 @@ def list_documents(context: RequestContextDep) -> dict:
 @app.post("/api/v1/query", response_model=QueryResponse)
 def query_documents(payload: QueryRequest, context: RequestContextDep) -> QueryResponse:
     try:
-        result = ask_question(payload.query, context.workspace_id)
+        if payload.use_cache:
+            result = ask_question(payload.query, context.workspace_id)
+        else:
+            result = ask_question(payload.query, context.workspace_id, use_cache=False)
     except Exception as exc:
         logger.exception("Query processing failed")
         raise HTTPException(
@@ -165,6 +188,8 @@ def query_documents(payload: QueryRequest, context: RequestContextDep) -> QueryR
         query=result["query"],
         answer=result["answer"],
         cached=result["cached"],
+        status=result.get("status", "generated"),
+        error_code=result.get("error_code"),
         context=result.get("context", []),
     )
 

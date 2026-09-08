@@ -58,7 +58,7 @@ sequenceDiagram
 Answers use this logical Redis key:
 
 ```text
-rag:answer:<workspace_id>:<corpus_version>:<sha256(normalized_query)>
+rag:answer:v2:<workspace_id>:<corpus_version>:<threshold>:<top_k>:<sha256(normalized_query)>
 ```
 
 Successful ingestion and reset increment `rag:corpus_version:<workspace_id>`. Old answers expire through TTL but become unreachable immediately, preventing a repeated question from returning an answer for an earlier document set.
@@ -97,7 +97,7 @@ DocuQuery-Enterprise-RAG/
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.13 (the version locked and tested in CI)
 - Docker Desktop or Docker Engine
 - A Gemini API key
 
@@ -107,7 +107,7 @@ Create and activate a virtual environment, then install dependencies:
 
 ```bash
 python -m venv .venv
-pip install -r requirements.txt
+pip install --require-hashes --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-dev.txt
 ```
 
 Copy `.env.example` to `.env` and set at least:
@@ -120,13 +120,26 @@ DOCUQUERY_WORKSPACE_ID=default
 
 Generate a long random API key rather than using the example value.
 
-Start Redis and Qdrant:
+Start the complete stack (API, worker, frontend, Redis and Qdrant):
 
 ```bash
-docker compose up -d
+docker compose up --build -d
 ```
 
-Start the API:
+Open `http://localhost:8501`. First startup downloads the embedding model;
+API readiness may take several minutes. Data and models use named volumes.
+`docker compose down` preserves these volumes; `down -v` deletes their data.
+Ports bind only to localhost. If Redis port 6379 is occupied, set
+`REDIS_PUBLISHED_PORT=16379` in `.env`; container connections still use 6379.
+`API_PUBLISHED_PORT` and `FRONTEND_PUBLISHED_PORT` similarly override host ports
+8000 and 8501 without changing service-to-service connections.
+
+For local Python development, start only `docker compose up -d redis qdrant`,
+then run the following commands. Export `.env` settings in the frontend terminal
+(Streamlit does not load `.env` automatically). Set local `REDIS_PORT` to the
+published port if overridden.
+
+Start the API locally:
 
 ```bash
 uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
@@ -208,6 +221,8 @@ curl -X POST http://localhost:8000/api/v1/query \
   "query": "Summarize the document",
   "answer": "...",
   "cached": false,
+  "status": "generated",
+  "error_code": null,
   "context": [
     {
       "source_file": "report.pdf",
@@ -221,6 +236,16 @@ curl -X POST http://localhost:8000/api/v1/query \
 ```
 
 No absolute server path is returned.
+
+`status` is `generated`, `degraded`, or `insufficient_context`. Embedding/provider
+outages return safe error codes (`embedding_unavailable`, `generation_unavailable`)
+and are never cached. Qdrant/Redis failures remain HTTP 503. Empty retrieval
+abstains without calling Gemini. `RAG_SCORE_THRESHOLD` defaults to 0.35 (cosine);
+this is a starting value, not a calibrated universal threshold. Prompts carry
+source/page labels and instructions to treat documents as untrusted data.
+
+Send `"use_cache": false` in query JSON for an uncached evaluation. Cache keys
+include a pipeline revision, threshold and top-K, so P0 answers are not reused.
 
 ### Reset one workspace
 
@@ -242,6 +267,28 @@ pytest tests -q
 
 The suite covers authentication, workspace validation, upload safety and cleanup, task ownership, cache versioning, lazy model construction, deterministic vector IDs, filtered retrieval, worker cleanup, reset isolation, and safe error responses.
 
+Set `DOCUQUERY_INTEGRATION=1` to additionally test real Redis/Qdrant ingestion,
+deduplication, isolation, cache invalidation and locking. The test allocates a
+random collection/workspace and cleans only that namespace. Gemini and embeddings
+are deterministic test doubles, so this test does not measure retrieval quality.
+
+`/health/live` checks the API process; `/health/ready` checks authentication
+configuration and Redis/Qdrant connectivity. It does not guarantee Gemini quota
+or worker availability. Compose checks the worker separately (a solo worker can
+temporarily miss health pings while processing a long document).
+
+Dependencies are defined in `pyproject.toml` and resolved in `uv.lock`. Runtime
+and development requirements are hash-pinned exports. To update intentionally:
+
+```bash
+uv lock
+uv export --frozen --no-dev --no-emit-project --output-file requirements.txt
+uv export --frozen --no-emit-project --output-file requirements-dev.txt
+```
+
+CPU PyTorch is selected on Linux/Windows. CI installs the hashed development
+export, runs tests against Redis/Qdrant, lint/type checks and a Docker build.
+
 ## Benchmark
 
 With the API and worker running:
@@ -257,6 +304,12 @@ python scripts/benchmark_docuquery.py \
 
 The script measures ingestion latency, first-query latency, repeated exact-query cache latency, and speedup. It is a local latency benchmark, not a retrieval-quality or concurrent-load evaluation.
 
+It rejects degraded/insufficient answers and verifies a cold query followed by
+actual cache hits. For the separate 30-question retrieval/concurrency evaluation,
+see [evaluation guide](evaluation/README.md). Human faithfulness/relevance grades
+are deliberately left unscored until reviewed; no fabricated quality scores are
+provided.
+
 ## Upgrade note
 
 Vectors created before workspace metadata was introduced are intentionally invisible to filtered retrieval. After upgrading, restart the API and worker, then re-ingest documents into the desired workspace. Existing root-level upload files can be removed manually after confirming they are no longer needed.
@@ -267,8 +320,8 @@ Vectors created before workspace metadata was introduced are intentionally invis
 - Dense retrieval without sparse search or reranking.
 - Text-only PDF extraction; scanned documents need OCR before upload.
 - No document metadata database or per-document deletion endpoint.
-- Redis and Qdrant are the only services in Compose; API, worker, and frontend run locally.
-- No declared persistent Docker volume, production monitoring, distributed tracing, or load-test guarantee.
+- No production monitoring, distributed tracing, or load-test guarantee.
+- The evaluation fixture is small and synthetic; broader held-out data and human grading are needed.
 
 ## License
 

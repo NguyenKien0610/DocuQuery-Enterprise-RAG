@@ -145,7 +145,7 @@ def fetch_documents() -> list[str]:
     return [str(document) for document in documents]
 
 
-def query_backend(question: str) -> tuple[str, bool, list[dict[str, object]]]:
+def query_backend(question: str) -> tuple[str, bool, list[dict[str, object]], str]:
     response = _request(
         "POST",
         QUERY_ENDPOINT,
@@ -158,6 +158,7 @@ def query_backend(question: str) -> tuple[str, bool, list[dict[str, object]]]:
         payload.get("answer", ""),
         bool(payload.get("cached", False)),
         [dict(chunk) for chunk in payload.get("context", []) if isinstance(chunk, dict)],
+        str(payload.get("status", "generated")),
     )
 
 
@@ -188,14 +189,7 @@ def _display_file_name(file_name: str) -> str:
 
 
 def _format_context_chunk(chunk: str) -> str:
-    cleaned = chunk.replace("\r\n", "\n").replace("\r", "\n")
-    cleaned = re.sub(r"(?m)^\s*\d+\s+", "", cleaned)
-    cleaned = re.sub(r"(?<!\S)\d+(?!\S)", " ", cleaned)
-    cleaned = re.sub(r"([^\.\!\?])\n", r"\1 ", cleaned)
-    cleaned = re.sub(r"[ \t]+", " ", cleaned)
-    cleaned = re.sub(r"\n{2,}", "\n", cleaned)
-    normalized_lines = [line.strip() for line in cleaned.splitlines() if line.strip()]
-    return "\n".join(normalized_lines).strip()
+    return chunk.replace("\r\n", "\n").replace("\r", "\n").strip()
 
 
 def render_context_chunks(context: list[dict[str, object]]) -> None:
@@ -326,6 +320,8 @@ def render_chat_history() -> None:
             if message["role"] == "assistant" and message.get("cached"):
                 st.caption("⚡ Cached")
             st.markdown(message["content"])
+            if message.get("status") == "degraded":
+                st.warning("Dịch vụ đang gián đoạn; đây chưa phải câu trả lời được tạo đầy đủ.")
             if message["role"] == "assistant" and message.get("context"):
                 render_context_chunks(message["context"])
 
@@ -350,7 +346,9 @@ def main() -> None:
 
     with st.chat_message("assistant"):
         try:
-            answer, cached, context = query_backend(question)
+            answer, cached, context, status = query_backend(question)
+            if status == "degraded":
+                st.warning("Dịch vụ đang gián đoạn; hãy thử lại sau.")
             if cached:
                 st.caption("⚡ Cached")
             streamed_answer = st.write_stream(stream_answer(answer))
@@ -362,6 +360,7 @@ def main() -> None:
                     "content": streamed_answer,
                     "cached": cached,
                     "context": context,
+                    "status": status,
                 }
             )
         except requests.exceptions.RequestException as exc:

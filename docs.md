@@ -17,8 +17,10 @@ The current implementation is a workspace-scoped RAG prototype. `README.md` is t
 2. Redis supplies the current workspace corpus version.
 3. An exact normalized-query key is checked for that workspace and version.
 4. On a miss, the query is embedded locally and Qdrant dense search is filtered by workspace.
-5. Retrieved text is passed to Gemini for answer generation.
-6. The answer and safe citation metadata are cached with a TTL.
+5. A cosine threshold removes weak matches. Empty results abstain without calling
+   Gemini; source/page labels and untrusted-document instructions accompany context.
+6. Successful generated answers and safe citations are cached. Degraded responses
+   carry a safe error code and are not cached. Evaluation can bypass cache reads/writes.
 
 ## Reset
 
@@ -33,6 +35,11 @@ The API never returns absolute source paths or raw infrastructure exceptions. Fi
 ## Deferred work
 
 - User identity, roles, organization membership, and per-workspace authorization.
-- Sparse retrieval, reranking, score thresholds, and retrieval-quality evaluation.
+- Sparse retrieval, reranking, and broader held-out retrieval evaluation.
 - OCR, malware scanning, rate limiting, object storage, and document metadata persistence.
-- Full-service containers, durable volumes, health probes, metrics, tracing, and concurrent load tests.
+- Production metrics/tracing and representative load-test guarantees.
+
+P1 adds full-service Compose, named volumes, health probes, hash-pinned dependency
+exports, CI, real Redis/Qdrant integration coverage, and a synthetic 30-question
+evaluation harness. See `docs/p1-plan.md` and `evaluation/README.md` for scope and
+measurement limitations. Shared-key access is still not JWT/RBAC.

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -17,6 +17,7 @@ class TaskStatusResponse(BaseModel):
 
 class QueryRequest(BaseModel):
     query: str = Field(min_length=1, max_length=4000)
+    use_cache: bool = True
 
     @field_validator("query")
     @classmethod
@@ -39,4 +40,6 @@ class QueryResponse(BaseModel):
     query: str
     answer: str
     cached: bool
+    status: Literal["generated", "degraded", "insufficient_context"] = "generated"
+    error_code: str | None = None
     context: list[ContextChunk] = Field(default_factory=list)

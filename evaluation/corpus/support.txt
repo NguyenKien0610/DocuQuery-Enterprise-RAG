@@ -1,0 +1,1 @@
+DocuQuery fictional company support policy. Standard support operates from 08:00 to 18:00 UTC on weekdays. Critical incidents have a 15 minute response target. Standard tickets have a 2 business day response target. The support email is help@example.test. Premium plans include weekend support.

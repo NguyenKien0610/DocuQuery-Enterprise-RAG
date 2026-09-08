@@ -1,10 +1,99 @@
 services:
   redis:
-    image: redis:alpine
+    image: redis:7.4.2-alpine
+    command: [redis-server, --appendonly, 'yes']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     ports:
-      - "6379:6379"
+      - "127.0.0.1:${REDIS_PUBLISHED_PORT:-6379}:6379"
 
   qdrant:
-    image: qdrant/qdrant
+    image: qdrant/qdrant:v1.18.0
+    volumes:
+      - qdrant-data:/qdrant/storage
     ports:
-      - "6333:6333"
+      - "127.0.0.1:${QDRANT_PUBLISHED_PORT:-6333}:6333"
+
+  api:
+    build: .
+    environment: &backend-env
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      DOCUQUERY_API_KEY: ${DOCUQUERY_API_KEY:-}
+      QDRANT_HOST: qdrant
+      QDRANT_COLLECTION: ${QDRANT_COLLECTION:-docuquery_dense_v1}
+      REDIS_HOST: redis
+      REDIS_DB: ${REDIS_DB:-0}
+      UPLOAD_DIR: /app/uploads
+      RAG_TOP_K: ${RAG_TOP_K:-5}
+      RAG_SCORE_THRESHOLD: ${RAG_SCORE_THRESHOLD:-0.35}
+      CHUNK_SIZE: ${CHUNK_SIZE:-1000}
+      CHUNK_OVERLAP: ${CHUNK_OVERLAP:-150}
+      MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-26214400}
+      MAX_EXTRACTED_BYTES: ${MAX_EXTRACTED_BYTES:-104857600}
+      WORKSPACE_LOCK_TIMEOUT_SECONDS: ${WORKSPACE_LOCK_TIMEOUT_SECONDS:-600}
+      WORKSPACE_LOCK_BLOCKING_TIMEOUT_SECONDS: ${WORKSPACE_LOCK_BLOCKING_TIMEOUT_SECONDS:-1}
+      GEMINI_CHAT_MODEL: ${GEMINI_CHAT_MODEL:-models/gemini-3.5-flash}
+      LOCAL_EMBEDDING_MODEL: ${LOCAL_EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+    volumes:
+      - uploads-data:/app/uploads
+      - model-cache:/home/app/.cache/huggingface
+    ports:
+      - "127.0.0.1:${API_PUBLISHED_PORT:-8000}:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready', timeout=5)"]
+      interval: 15s
+      timeout: 6s
+      start_period: 180s
+      retries: 10
+
+  worker:
+    build: .
+    command: [celery, -A, src.worker.celery_app, worker, --loglevel=info, --pool=solo, --hostname=worker@docuquery]
+    environment: *backend-env
+    volumes:
+      - uploads-data:/app/uploads
+      - model-cache:/home/app/.cache/huggingface
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, celery, -A, src.worker.celery_app, inspect, ping, --destination=worker@docuquery, --timeout=5]
+      interval: 30s
+      timeout: 15s
+      start_period: 60s
+      retries: 5
+
+  frontend:
+    build: .
+    command: [streamlit, run, frontend/app.py, --server.address=0.0.0.0]
+    environment:
+      DOCUQUERY_API_BASE_URL: http://api:8000
+      DOCUQUERY_API_KEY: ${DOCUQUERY_API_KEY:-}
+      DOCUQUERY_WORKSPACE_ID: ${DOCUQUERY_WORKSPACE_ID:-default}
+    ports:
+      - "127.0.0.1:${FRONTEND_PUBLISHED_PORT:-8501}:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health', timeout=5)"]
+      interval: 30s
+      timeout: 6s
+      retries: 5
+
+volumes:
+  redis-data:
+  qdrant-data:
+  uploads-data:
+  model-cache:

@@ -107,7 +107,7 @@ def upload_and_wait(
                 "elapsed_seconds": elapsed,
                 "poll_count": poll_count,
                 "chunks_indexed": result.get("chunks_indexed"),
-                "source": result.get("source"),
+                "source_file": result.get("source_file"),
             }
 
         if status == "FAILURE":
@@ -133,6 +133,8 @@ def run_query(
         timeout=timeout,
     )
     elapsed = time.perf_counter() - started_at
+    if payload.get("status") != "generated":
+        raise RuntimeError(f"Query did not generate an answer: {payload.get('status', 'missing_status')}")
     return {
         "elapsed_seconds": elapsed,
         "cached": bool(payload.get("cached", False)),
@@ -180,6 +182,8 @@ def benchmark(args: argparse.Namespace) -> dict[str, Any]:
         for _ in range(args.cache_hit_runs)
     ]
     hit_latencies = [item["elapsed_seconds"] for item in cache_hits]
+    if cache_miss["cached"] or any(not item["cached"] for item in cache_hits):
+        raise RuntimeError("Expected a cold query followed by cache hits; use a fresh workspace or --reset.")
 
     return {
         "base_url": base_url,

@@ -1,0 +1,1 @@
+DocuQuery fictional company security policy. Passwords must contain at least 14 characters. Session tokens expire after 30 minutes. Security incidents must be reported within 1 hour. Backup retention is 90 days. Production access is reviewed every 3 months.

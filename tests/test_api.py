@@ -205,6 +205,8 @@ def test_query_returns_cached_answer_on_cache_hit(client, monkeypatch):
         "query": "What is cached?",
         "answer": "Cached answer",
         "cached": True,
+        "status": "generated",
+        "error_code": None,
         "context": [
             {
                 "source_file": "cached-file.pdf",
@@ -276,6 +278,8 @@ def test_query_returns_context_and_fresh_answer_on_cache_miss(client, monkeypatc
         "query": "Explain the document",
         "answer": "Fresh generated answer",
         "cached": False,
+        "status": "generated",
+        "error_code": None,
         "context": [
             {
                 "source_file": "file-two.pdf",
@@ -295,6 +299,7 @@ def test_query_returns_context_and_fresh_answer_on_cache_miss(client, monkeypatc
     }
     assert captured_cache["ttl"] == rag_engine.CACHE_TTL_SECONDS
     assert json.loads(captured_cache["value"]) == {
+        "status": "generated",
         "answer": "Fresh generated answer",
         "context": [
             {
