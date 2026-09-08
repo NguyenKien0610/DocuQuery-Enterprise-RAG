@@ -37,6 +37,41 @@ def test_no_evidence_abstains_without_calling_llm(query_services, monkeypatch):
     assert result["context"] == []
 
 
+def test_retrieval_only_skips_cache_and_generation(query_services, monkeypatch):
+    def forbidden(*args):
+        pytest.fail("Retrieval-only must not use answer cache or LLM")
+
+    monkeypatch.setattr(rag_engine.redis_client, "get", forbidden)
+    monkeypatch.setattr(rag_engine.redis_client, "setex", forbidden)
+    monkeypatch.setattr(rag_engine, "_invoke_llm", forbidden)
+    point = SimpleNamespace(
+        payload={
+            "source_file": "report.txt",
+            "document_id": "a",
+            "chunk_index": 0,
+            "text": "Evidence",
+        }
+    )
+    monkeypatch.setattr(
+        rag_engine.qdrant_client,
+        "query_points",
+        lambda **kwargs: SimpleNamespace(points=[point]),
+    )
+    result = rag_engine.ask_question("question", "test", retrieval_only=True)
+    assert result["status"] == "retrieved"
+    assert result["answer"] == ""
+    assert result["cached"] is False
+    assert result["context"][0]["text"] == "Evidence"
+    monkeypatch.setenv("DOCUQUERY_API_KEY", "test")
+    response = TestClient(main.app).post(
+        "/api/v1/query",
+        headers={"X-API-Key": "test", "X-Workspace-ID": "team-a"},
+        json={"query": "question", "retrieval_only": True},
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "retrieved"
+
+
 def test_embedding_failure_is_explicit_and_not_cached(query_services, monkeypatch):
     def fail():
         raise RuntimeError("private credentials")

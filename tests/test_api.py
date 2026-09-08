@@ -17,6 +17,77 @@ from src import main, rag_engine
 AUTH_HEADERS = {"X-API-Key": "test-api-key", "X-Workspace-ID": "team-a"}
 
 
+def test_legacy_file_with_32_character_prefix_remains_visible(client, tmp_path):
+    folder = tmp_path / "team-a"
+    folder.mkdir()
+    name = f"{'a' * 32}_notes.txt"
+    (folder / name).write_text("legacy", encoding="utf-8")
+    response = client.get("/api/v1/documents", headers=AUTH_HEADERS)
+    assert response.json() == {"documents": [name]}
+
+
+def test_upload_metadata_failure_is_service_unavailable(client, monkeypatch):
+    from src import state
+
+    def fail(*args):
+        raise OSError("private storage path")
+
+    monkeypatch.setattr(state, "reserve_upload", fail)
+    response = client.post(
+        "/api/v1/documents/upload",
+        headers=AUTH_HEADERS,
+        files={"file": ("notes.txt", b"hello", "text/plain")},
+    )
+    assert response.status_code == 503
+    assert "private storage path" not in response.text
+
+
+def test_legacy_key_cannot_select_another_workspace(client):
+    response = client.get(
+        "/api/v1/documents",
+        headers={**AUTH_HEADERS, "X-Workspace-ID": "team-b"},
+    )
+    assert response.status_code == 403
+
+
+@pytest.mark.parametrize("role", ["reader", "writer"])
+def test_non_owner_cannot_reset_or_reconcile(client, monkeypatch, role):
+    monkeypatch.setenv(
+        "DOCUQUERY_CREDENTIALS",
+        json.dumps([{"key": "test-api-key", "workspaces": {"team-a": role}}]),
+    )
+    assert client.get("/api/v1/documents", headers=AUTH_HEADERS).status_code == 200
+    assert (
+        client.delete("/api/v1/workspace/reset", headers=AUTH_HEADERS).status_code
+        == 403
+    )
+    assert (
+        client.post("/api/v1/workspace/reconcile", headers=AUTH_HEADERS).status_code
+        == 403
+    )
+
+
+def test_reader_cannot_upload(client, monkeypatch):
+    monkeypatch.setenv(
+        "DOCUQUERY_CREDENTIALS",
+        json.dumps([{"key": "test-api-key", "workspaces": {"team-a": "reader"}}]),
+    )
+    response = client.post(
+        "/api/v1/documents/upload",
+        headers=AUTH_HEADERS,
+        files={"file": ("notes.txt", b"hello", "text/plain")},
+    )
+    assert response.status_code == 403
+
+
+def test_workspace_rate_limit_returns_retry_after(client, monkeypatch):
+    monkeypatch.setenv("MAX_REQUESTS_PER_MINUTE", "1")
+    assert client.get("/api/v1/documents", headers=AUTH_HEADERS).status_code == 200
+    response = client.get("/api/v1/documents", headers=AUTH_HEADERS)
+    assert response.status_code == 429
+    assert response.headers["Retry-After"] == "60"
+
+
 @pytest.fixture
 def client(monkeypatch, tmp_path):
     monkeypatch.setenv("DOCUQUERY_API_KEY", "test-api-key")
@@ -59,6 +130,7 @@ def test_upload_accepts_valid_pdf_and_returns_task_id(client, monkeypatch):
         "team-a",
         payload["document_id"],
         "sample.pdf",
+        payload["task_id"],
     ]
     assert Path(captured["args"][0]).parent.name == "team-a"
 
@@ -71,7 +143,11 @@ def test_upload_rejects_empty_pdf_payload(client):
     )
 
     assert response.status_code == 400
-    assert [path for path in main.UPLOAD_DIR.rglob("*") if path.is_file()] == []
+    assert [
+        path
+        for path in main.UPLOAD_DIR.rglob("*")
+        if path.is_file() and ".state" not in path.parts
+    ] == []
 
 
 def test_upload_rejects_non_pdf_extension(client):
@@ -100,12 +176,18 @@ def test_upload_rejects_oversized_file_before_dispatch(client, monkeypatch):
     )
 
     assert response.status_code == 413
-    assert [path for path in main.UPLOAD_DIR.rglob("*") if path.is_file()] == []
+    assert [
+        path
+        for path in main.UPLOAD_DIR.rglob("*")
+        if path.is_file() and ".state" not in path.parts
+    ] == []
 
 
 def test_upload_dispatch_failure_removes_file_and_task_mapping(client, monkeypatch):
     removed_tasks = []
-    monkeypatch.setattr(main, "register_task_workspace", lambda task_id, workspace: None)
+    monkeypatch.setattr(
+        main, "register_task_workspace", lambda task_id, workspace: None
+    )
     monkeypatch.setattr(main, "remove_task_workspace", removed_tasks.append)
     monkeypatch.setattr(
         main.process_document_task,
@@ -120,9 +202,15 @@ def test_upload_dispatch_failure_removes_file_and_task_mapping(client, monkeypat
     )
 
     assert response.status_code == 503
-    assert response.json() == {"detail": "Document processing is temporarily unavailable."}
+    assert response.json() == {
+        "detail": "Document processing is temporarily unavailable."
+    }
     assert len(removed_tasks) == 1
-    assert [path for path in main.UPLOAD_DIR.rglob("*") if path.is_file()] == []
+    assert [
+        path
+        for path in main.UPLOAD_DIR.rglob("*")
+        if path.is_file() and ".state" not in path.parts
+    ] == []
 
 
 def test_list_documents_isolated_by_workspace(client):
@@ -140,6 +228,17 @@ def test_list_documents_isolated_by_workspace(client):
 
 
 def test_task_status_hidden_from_other_workspace(client, monkeypatch):
+    monkeypatch.setenv(
+        "DOCUQUERY_CREDENTIALS",
+        json.dumps(
+            [
+                {
+                    "key": "test-api-key",
+                    "workspaces": {"team-a": "owner", "team-b": "owner"},
+                }
+            ]
+        ),
+    )
     monkeypatch.setattr(
         main,
         "task_belongs_to_workspace",
@@ -244,7 +343,9 @@ def test_query_returns_context_and_fresh_answer_on_cache_miss(client, monkeypatc
     monkeypatch.setattr(
         rag_engine.redis_client,
         "setex",
-        lambda key, ttl, value: captured_cache.update({"key": key, "ttl": ttl, "value": value}),
+        lambda key, ttl, value: captured_cache.update(
+            {"key": key, "ttl": ttl, "value": value}
+        ),
     )
     monkeypatch.setattr(
         rag_engine.qdrant_client,
@@ -475,3 +576,112 @@ def test_task_status_hides_backend_error(client, monkeypatch):
     assert response.status_code == 503
     assert response.json() == {"detail": "Task status is temporarily unavailable."}
     assert "private-redis-address" not in response.text
+
+
+@pytest.mark.parametrize("status", ["failed", "cancelled", "succeeded"])
+def test_durable_terminal_status_does_not_need_broker(client, monkeypatch, tmp_path, status):
+    from src import state
+
+    state.reserve_upload("durable-task", "team-a", 1)
+    if status == "failed":
+        state.fail_task("team-a", "durable-task")
+    elif status == "cancelled":
+        state.reset("team-a", tmp_path)
+    else:
+        state.complete_duplicate("team-a", "durable-task", {"chunks_indexed": 2})
+
+    def unavailable(*args):
+        raise RuntimeError("private broker unavailable")
+
+    monkeypatch.setattr(main, "task_belongs_to_workspace", unavailable)
+    monkeypatch.setattr(main.celery_app, "AsyncResult", unavailable)
+    response = client.get("/api/v1/documents/status/durable-task", headers=AUTH_HEADERS)
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == ("SUCCESS" if status == "succeeded" else "FAILURE")
+    if status == "failed":
+        assert payload["error"] == "Document processing failed."
+    elif status == "cancelled":
+        assert payload["error"] == "Task cancelled by workspace reset."
+    else:
+        assert payload["result"] == {"chunks_indexed": 2}
+    assert "private broker" not in response.text
+
+
+def test_durable_queued_task_survives_expired_ownership_mapping(client, monkeypatch, tmp_path):
+    from src import state
+
+    state.reserve_upload("queued-task", "team-a", 10)
+    path = tmp_path / "staged.txt"
+    path.write_text("hello", encoding="utf-8")
+    state.queue_upload("queued-task", "team-a", path)
+    monkeypatch.setattr(main, "task_belongs_to_workspace", lambda *args: False)
+    monkeypatch.setattr(main.celery_app, "AsyncResult", lambda task_id: SimpleNamespace(
+        status="PENDING", failed=lambda: False, successful=lambda: False,
+    ))
+    response = client.get("/api/v1/documents/status/queued-task", headers=AUTH_HEADERS)
+    assert response.status_code == 200
+    assert response.json()["status"] == "PENDING"
+
+
+@pytest.mark.parametrize("failed", [True, False])
+def test_durable_task_does_not_grant_another_workspace_access(client, monkeypatch, failed):
+    from src import state
+
+    state.reserve_upload("private-durable", "team-a", 1)
+    if failed:
+        state.fail_task("team-a", "private-durable")
+    monkeypatch.setenv("DOCUQUERY_CREDENTIALS", json.dumps([
+        {"key": "test-api-key", "workspaces": {"team-a": "reader", "team-b": "reader"}},
+    ]))
+    monkeypatch.setattr(main, "task_belongs_to_workspace", lambda *args: False)
+    monkeypatch.setattr(main.celery_app, "AsyncResult", lambda *args: pytest.fail("Cross-workspace task lookup"))
+    response = client.get(
+        "/api/v1/documents/status/private-durable",
+        headers={**AUTH_HEADERS, "X-Workspace-ID": "team-b"},
+    )
+    assert response.status_code == 404
+
+
+def test_managed_catalog_excludes_paths_and_keeps_legacy_list_contract(client, tmp_path):
+    from src import state
+
+    path = tmp_path / "team-a" / "notes.txt"
+    path.parent.mkdir()
+    path.write_text("hello", encoding="utf-8")
+    state.publish("team-a", {
+        "document_id": "a" * 64, "revision": "1" * 32, "source_file": "/private/notes.txt",
+        "path": str(path), "bytes": 5, "chunks": 1,
+    }, None)
+    response = client.get("/api/v1/documents/managed", headers=AUTH_HEADERS)
+    assert response.status_code == 200
+    assert response.json() == {"items": [{
+        "document_id": "a" * 64, "revision": "1" * 32, "source_file": "notes.txt", "bytes": 5, "chunks": 1,
+    }]}
+    assert "private" not in response.text
+    assert client.get("/api/v1/documents", headers=AUTH_HEADERS).json() == {"documents": ["notes.txt"]}
+
+
+@pytest.mark.parametrize("role", ["reader", "writer"])
+def test_document_delete_requires_owner(client, monkeypatch, role):
+    monkeypatch.setenv("DOCUQUERY_CREDENTIALS", json.dumps([
+        {"key": "test-api-key", "workspaces": {"team-a": role}},
+    ]))
+    response = client.delete(f"/api/v1/documents/{'a' * 64}?revision={'1' * 32}", headers=AUTH_HEADERS)
+    assert response.status_code == 403
+
+
+def test_document_delete_maps_missing_conflict_and_invalid_ids(client, monkeypatch):
+    from src import state
+
+    url = f"/api/v1/documents/{'a' * 64}?revision={'1' * 32}"
+    assert client.delete(url, headers=AUTH_HEADERS).status_code == 404
+    assert client.delete(f"/api/v1/documents/{'a' * 64}", headers=AUTH_HEADERS).status_code == 422
+    assert client.delete("/api/v1/documents/invalid?revision=invalid", headers=AUTH_HEADERS).status_code == 422
+    for error, expected in [(state.DocumentConflictError("private"), 409), (state.WorkspaceBusyError("private"), 409), (OSError("private"), 503)]:
+        def fail(*args, error=error):
+            raise error
+        monkeypatch.setattr(main, "delete_document", fail)
+        response = client.delete(url, headers=AUTH_HEADERS)
+        assert response.status_code == expected
+        assert "private" not in response.text

@@ -71,7 +71,7 @@ async def save_validated_upload(
     if not file.filename:
         raise UploadRejected(400, "A file is required.")
 
-    source_file = Path(file.filename).name
+    source_file = Path(file.filename.replace("\\", "/")).name
     suffix = Path(source_file).suffix.lower()
     if suffix not in SUPPORTED_EXTENSIONS:
         raise UploadRejected(400, "Only PDF, DOCX, and TXT files are supported.")
@@ -95,7 +95,7 @@ async def save_validated_upload(
 
         _validate_content(temporary_path, suffix, max_extracted_bytes)
         document_id = digest.hexdigest()
-        saved_path = root / f"{document_id}_{source_file}"
+        saved_path = root / f"{uuid.uuid4().hex}_{source_file}"
         temporary_path.replace(saved_path)
         return SavedUpload(
             path=saved_path,

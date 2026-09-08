@@ -9,6 +9,22 @@ import pytest
 from src import rag_engine
 
 
+def test_backend_import_does_not_load_training_libraries():
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import src.rag_engine; import sys; "
+            "assert 'torch' not in sys.modules; "
+            "assert 'sentence_transformers' not in sys.modules",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+
 def test_import_does_not_construct_model_clients():
     code = textwrap.dedent(
         """
@@ -46,8 +62,7 @@ def test_model_clients_are_lazy_and_memoized(monkeypatch):
     created = []
     rag_engine.get_embeddings.cache_clear()
     monkeypatch.setattr(
-        rag_engine,
-        "HuggingFaceEmbeddings",
+        "langchain_huggingface.HuggingFaceEmbeddings",
         lambda **kwargs: created.append(kwargs) or object(),
     )
 
@@ -96,13 +111,13 @@ def test_deterministic_point_ids_and_version_advance(monkeypatch, tmp_path):
     monkeypatch.setattr(rag_engine, "workspace_lock", lambda workspace: nullcontext())
     monkeypatch.setattr(
         rag_engine,
-        "_load_document_sections",
+        "parse_isolated",
         lambda path: [{"text": "first chunk second chunk", "page_number": 1}],
     )
     monkeypatch.setattr(
-        rag_engine.text_splitter,
-        "split_text",
-        lambda text: ["first", "second"],
+        rag_engine,
+        "get_text_splitter",
+        lambda: SimpleNamespace(split_text=lambda text: ["first", "second"]),
     )
     monkeypatch.setattr(
         rag_engine,
@@ -141,14 +156,15 @@ def test_deterministic_point_ids_and_version_advance(monkeypatch, tmp_path):
     second_ids = [point.id for point in batches[-1]["points"]]
 
     assert first_ids == second_ids
-    assert len(batches) == 2
+    assert len(batches) == 1
     assert all(batch["wait"] is True for batch in batches)
     assert first["chunks_indexed"] == second["chunks_indexed"] == 2
     assert first["document_id"] == "a" * 64
-    assert versions == ["team-a", "team-a"]
+    assert rag_engine.get_corpus_version("team-a") == 1
     assert batches[0]["points"][0].payload == {
         "text": "first",
         "workspace_id": "team-a",
+        "revision": batches[0]["points"][0].payload["revision"],
         "document_id": "a" * 64,
         "source_file": "doc.txt",
         "chunk_index": 0,
@@ -161,10 +177,14 @@ def test_failed_upsert_does_not_advance_corpus_version(monkeypatch, tmp_path):
     monkeypatch.setattr(rag_engine, "workspace_lock", lambda workspace: nullcontext())
     monkeypatch.setattr(
         rag_engine,
-        "_load_document_sections",
+        "parse_isolated",
         lambda path: [{"text": "content", "page_number": None}],
     )
-    monkeypatch.setattr(rag_engine.text_splitter, "split_text", lambda text: [text])
+    monkeypatch.setattr(
+        rag_engine,
+        "get_text_splitter",
+        lambda: SimpleNamespace(split_text=lambda text: [text]),
+    )
     monkeypatch.setattr(
         rag_engine,
         "get_embeddings",
@@ -222,38 +242,21 @@ def test_query_filters_qdrant_by_workspace(monkeypatch):
 
 
 def test_workspace_lock_uses_scoped_key_and_releases(monkeypatch):
-    calls = []
-    fake_lock = SimpleNamespace(
-        acquire=lambda blocking: calls.append(("acquire", blocking)) or True,
-        release=lambda: calls.append(("release", None)),
-    )
-    monkeypatch.setattr(
-        rag_engine.redis_client,
-        "lock",
-        lambda **kwargs: calls.append(("lock", kwargs)) or fake_lock,
-    )
-
     with rag_engine.workspace_lock("team-a"):
-        calls.append(("inside", None))
-
-    assert calls[0][0] == "lock"
-    assert calls[0][1]["name"] == "rag:workspace_lock:team-a"
-    assert calls[1:] == [
-        ("acquire", True),
-        ("inside", None),
-        ("release", None),
-    ]
+        with rag_engine.workspace_lock("team-b"):
+            pass
+    with rag_engine.workspace_lock("team-a"):
+        pass
 
 
 def test_workspace_lock_rejects_busy_workspace(monkeypatch):
-    fake_lock = SimpleNamespace(acquire=lambda blocking: False)
-    monkeypatch.setattr(rag_engine.redis_client, "lock", lambda **kwargs: fake_lock)
-
-    with (
-        pytest.raises(rag_engine.WorkspaceBusyError),
-        rag_engine.workspace_lock("team-a"),
-    ):
-        pytest.fail("Busy workspace lock was entered.")
+    monkeypatch.setenv("WORKSPACE_LOCK_BLOCKING_TIMEOUT_SECONDS", "0")
+    with rag_engine.workspace_lock("team-a"):
+        with (
+            pytest.raises(rag_engine.WorkspaceBusyError),
+            rag_engine.workspace_lock("team-a"),
+        ):
+            pytest.fail("Busy workspace lock was entered.")
 
 
 def test_reset_deletes_only_requested_workspace(monkeypatch, tmp_path):
@@ -280,11 +283,10 @@ def test_reset_deletes_only_requested_workspace(monkeypatch, tmp_path):
 
     result = rag_engine.reset_workspace("team-a", tmp_path)
 
-    assert not team_a.exists()
+    assert list(team_a.iterdir()) == []
     assert (team_b / "b.txt").read_text(encoding="utf-8") == "b"
     assert result["deleted_files"] == 1
-    assert result["corpus_version"] == 4
-    assert versions == ["team-a"]
+    assert result["corpus_version"] == 1
     selector = delete_calls[0]["points_selector"]
     assert selector.filter.must[0].key == "workspace_id"
     assert selector.filter.must[0].match.value == "team-a"

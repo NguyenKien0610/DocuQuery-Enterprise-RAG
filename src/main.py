@@ -6,16 +6,20 @@ from pathlib import Path
 from typing import Annotated
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import Path as ApiPath
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=False)
 
+from src import state
 from src.rag_engine import (
     WorkspaceBusyError,
     ask_question,
+    delete_document,
     ensure_qdrant_collection,
     qdrant_client,
+    reconcile_workspace,
     redis_client,
     register_task_workspace,
     remove_task_workspace,
@@ -23,7 +27,7 @@ from src.rag_engine import (
     task_belongs_to_workspace,
 )
 from src.schemas import QueryRequest, QueryResponse, TaskStatusResponse, UploadResponse
-from src.security import RequestContextDep
+from src.security import RequestContextDep, credentials
 from src.uploads import UploadRejected, save_validated_upload
 from src.worker import celery_app, process_document_task
 
@@ -58,8 +62,7 @@ def health_live() -> dict:
 @app.get("/health/ready", include_in_schema=False)
 def health_ready() -> dict:
     try:
-        if not os.getenv("DOCUQUERY_API_KEY"):
-            raise ValueError("Missing authentication configuration")
+        credentials()
         redis_client.ping()
         qdrant_client.get_collections()
     except Exception as exc:
@@ -70,14 +73,22 @@ def health_ready() -> dict:
 def _list_uploaded_documents(workspace_id: str) -> list[str]:
     workspace_dir = UPLOAD_DIR / workspace_id
     try:
+        snapshot = state.snapshot(workspace_id)
+        published = [Path(doc["path"]).name for doc in snapshot["documents"]]
+        if not snapshot["legacy"]:
+            return sorted(published)
         if not workspace_dir.exists():
-            return []
+            return sorted(published)
+        unpublished = {
+            Path(item["path"]).resolve() for item in state.garbage(workspace_id)
+        }
         return sorted(
             [
                 file_path.name
                 for file_path in workspace_dir.iterdir()
                 if file_path.is_file()
                 and file_path.suffix.lower() in SUPPORTED_UPLOAD_EXTENSIONS
+                and file_path.resolve() not in unpublished
             ]
         )
     except OSError as exc:
@@ -93,24 +104,39 @@ async def upload_document(
     file: Annotated[UploadFile, File()],
     context: RequestContextDep,
 ) -> UploadResponse:
+    context.require("write")
+    task_id = str(uuid.uuid4())
+    try:
+        state.reserve_upload(task_id, context.workspace_id, MAX_UPLOAD_BYTES)
+    except state.QuotaExceededError as exc:
+        raise HTTPException(status_code=413, detail=str(exc)) from exc
+    except WorkspaceBusyError as exc:
+        raise HTTPException(status_code=409, detail="Workspace is busy.") from exc
+    except Exception as exc:
+        logger.exception("Failed to reserve document storage")
+        raise HTTPException(
+            status_code=503, detail="Document storage is temporarily unavailable."
+        ) from exc
     try:
         saved = await save_validated_upload(
             file,
-            UPLOAD_DIR / context.workspace_id,
+            UPLOAD_DIR / ".staging" / context.workspace_id,
             MAX_UPLOAD_BYTES,
             MAX_EXTRACTED_BYTES,
         )
     except UploadRejected as exc:
+        state.fail_task(context.workspace_id, task_id)
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
     except OSError as exc:
+        state.fail_task(context.workspace_id, task_id)
         logger.exception("Failed to store uploaded document")
         raise HTTPException(
             status_code=503,
             detail="Document storage is temporarily unavailable.",
         ) from exc
 
-    task_id = str(uuid.uuid4())
     try:
+        state.queue_upload(task_id, context.workspace_id, saved.path)
         register_task_workspace(task_id, context.workspace_id)
         process_document_task.apply_async(
             args=[
@@ -118,11 +144,13 @@ async def upload_document(
                 context.workspace_id,
                 saved.document_id,
                 saved.source_file,
+                task_id,
             ],
             task_id=task_id,
         )
     except Exception as exc:
         saved.path.unlink(missing_ok=True)
+        state.fail_task(context.workspace_id, task_id)
         try:
             remove_task_workspace(task_id)
         except Exception:
@@ -139,7 +167,28 @@ async def upload_document(
 @app.get("/api/v1/documents/status/{task_id}", response_model=TaskStatusResponse)
 def get_document_status(task_id: str, context: RequestContextDep) -> TaskStatusResponse:
     try:
-        if not task_belongs_to_workspace(task_id, context.workspace_id):
+        stored_task = state.task(context.workspace_id, task_id)
+        if stored_task and stored_task["status"] == "failed":
+            return TaskStatusResponse(
+                task_id=task_id,
+                status="FAILURE",
+                error="Document processing failed.",
+            )
+        if stored_task and stored_task["status"] == "cancelled":
+            return TaskStatusResponse(
+                task_id=task_id,
+                status="FAILURE",
+                error="Task cancelled by workspace reset.",
+            )
+        if stored_task and stored_task["status"] == "succeeded":
+            import json
+
+            return TaskStatusResponse(
+                task_id=task_id,
+                status="SUCCESS",
+                result=json.loads(stored_task["result"]),
+            )
+        if stored_task is None and not task_belongs_to_workspace(task_id, context.workspace_id):
             raise HTTPException(status_code=404, detail="Task not found.")
         task_result = celery_app.AsyncResult(task_id)
 
@@ -171,10 +220,50 @@ def list_documents(context: RequestContextDep) -> dict:
     return {"documents": _list_uploaded_documents(context.workspace_id)}
 
 
+@app.get("/api/v1/documents/managed")
+def list_managed_documents(context: RequestContextDep) -> dict:
+    try:
+        return {"items": [
+            {
+                "document_id": doc["document_id"], "revision": doc["revision"],
+                "source_file": str(doc["source_file"]).replace("\\", "/").rsplit("/", 1)[-1],
+                "bytes": doc["bytes"], "chunks": doc["chunks"],
+            }
+            for doc in sorted(state.snapshot(context.workspace_id)["documents"], key=lambda doc: doc["source_file"])
+        ]}
+    except Exception as exc:
+        logger.exception("Managed document listing failed")
+        raise HTTPException(status_code=503, detail="Document storage is temporarily unavailable.") from exc
+
+
+@app.delete("/api/v1/documents/{document_id}")
+def delete_document_endpoint(
+    document_id: Annotated[str, ApiPath(pattern=r"^[0-9a-f]{64}$")],
+    revision: Annotated[str, Query(pattern=r"^[0-9a-f]{32}$")],
+    context: RequestContextDep,
+) -> dict:
+    context.require("admin")
+    try:
+        return delete_document(context.workspace_id, document_id, revision)
+    except state.DocumentNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Document not found.") from exc
+    except state.DocumentConflictError as exc:
+        raise HTTPException(status_code=409, detail="Document revision changed. Refresh the document list.") from exc
+    except WorkspaceBusyError as exc:
+        raise HTTPException(status_code=409, detail="Workspace is busy or has active uploads. Try again after processing completes.") from exc
+    except Exception as exc:
+        logger.exception("Document deletion failed")
+        raise HTTPException(status_code=503, detail="Document deletion is temporarily unavailable.") from exc
+
+
 @app.post("/api/v1/query", response_model=QueryResponse)
 def query_documents(payload: QueryRequest, context: RequestContextDep) -> QueryResponse:
     try:
-        if payload.use_cache:
+        if payload.retrieval_only:
+            result = ask_question(
+                payload.query, context.workspace_id, retrieval_only=True
+            )
+        elif payload.use_cache:
             result = ask_question(payload.query, context.workspace_id)
         else:
             result = ask_question(payload.query, context.workspace_id, use_cache=False)
@@ -196,6 +285,7 @@ def query_documents(payload: QueryRequest, context: RequestContextDep) -> QueryR
 
 @app.delete("/api/v1/workspace/reset")
 def reset_workspace_endpoint(context: RequestContextDep) -> dict:
+    context.require("admin")
     try:
         return reset_workspace(context.workspace_id, UPLOAD_DIR)
     except WorkspaceBusyError as exc:
@@ -205,4 +295,17 @@ def reset_workspace_endpoint(context: RequestContextDep) -> dict:
         raise HTTPException(
             status_code=503,
             detail="Workspace reset is temporarily unavailable.",
+        ) from exc
+
+
+@app.post("/api/v1/workspace/reconcile")
+def reconcile_workspace_endpoint(context: RequestContextDep) -> dict:
+    context.require("admin")
+    try:
+        return reconcile_workspace(context.workspace_id)
+    except WorkspaceBusyError as exc:
+        raise HTTPException(status_code=409, detail="Workspace is busy.") from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503, detail="Workspace cleanup is temporarily unavailable."
         ) from exc

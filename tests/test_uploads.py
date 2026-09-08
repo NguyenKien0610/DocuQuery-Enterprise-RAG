@@ -96,7 +96,8 @@ async def test_accepts_supported_document_content(tmp_path, name, content):
     )
 
     assert saved.path.read_bytes() == content
-    assert saved.path.name == f"{saved.document_id}_{name}"
+    assert saved.path.name.endswith(f"_{name}")
+    assert len(saved.path.name.split("_", 1)[0]) == 32
     assert saved.source_file == name
 
 
