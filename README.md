@@ -12,7 +12,7 @@ It demonstrates asynchronous ingestion, dense vector retrieval, page-aware citat
 - Gemini answer generation using retrieved document context.
 - Exact-query Redis caching keyed by workspace and corpus version.
 - Automatic cache invalidation after successful ingestion or reset.
-- Deterministic vector IDs derived from workspace, document content, and chunk index.
+- Revision-scoped vector IDs and idempotent publication of duplicate document content.
 - Source citations with safe filename, document ID, chunk index, and PDF page number.
 - Upload size, signature, structure, UTF-8, and DOCX expansion checks.
 - API-key protection and logical workspace isolation.
@@ -25,26 +25,30 @@ sequenceDiagram
     participant API as FastAPI
     participant R as Redis
     participant W as Celery Worker
+    participant S as Local uploads + SQLite
     participant Q as Qdrant
     participant L as Gemini
 
     UI->>API: Upload + API key + workspace
-    API->>API: Stream, validate, hash
+    API->>S: Reserve workspace capacity
+    API->>API: Stream, validate, hash unique staging file
     API->>R: Record task ownership
     API->>R: Enqueue task
     R->>W: Deliver task
-    W->>R: Acquire workspace lock
+    W->>S: Acquire OS workspace lock; validate task generation
     W->>W: Parse, chunk, embed batch
-    W->>Q: Upsert deterministic points
-    W->>R: Increment corpus version
-    W->>R: Release lock
+    W->>S: Journal candidate revision
+    W->>Q: Upsert revision-scoped points
+    W->>S: Persist file; publish revision + corpus version
+    W->>S: Release lock
 
     UI->>API: Query + API key + workspace
-    API->>R: Read corpus version and exact-query cache
+    API->>S: Read corpus version
+    API->>R: Read versioned exact-query cache
     alt Cache hit
         R-->>API: Cached answer and citations
     else Cache miss
-        API->>Q: Dense search filtered by workspace
+        API->>Q: Dense search filtered by workspace + published revisions
         Q-->>API: Relevant chunks
         API->>L: Context + question
         L-->>API: Answer
@@ -58,10 +62,12 @@ sequenceDiagram
 Answers use this logical Redis key:
 
 ```text
-rag:answer:v2:<workspace_id>:<corpus_version>:<threshold>:<top_k>:<sha256(normalized_query)>
+rag:answer:v3:<workspace_id>:<corpus_version>:<threshold>:<top_k>:<sha256(normalized_query)>
 ```
 
-Successful ingestion and reset increment `rag:corpus_version:<workspace_id>`. Old answers expire through TTL but become unreachable immediately, preventing a repeated question from returning an answer for an earlier document set.
+Successful publication and reset increment the workspace's SQLite corpus version.
+Old Redis answers expire through TTL but become unreachable after the version
+changes. Candidate vector revisions remain hidden until SQLite publishes them.
 
 ## Security boundary
 
@@ -74,7 +80,11 @@ X-Workspace-ID: <workspace-id>
 
 The API key is compared in constant time and the service fails closed when no server key is configured. Workspace IDs are validated slugs and scope files, vectors, cache entries, tasks, queries, and reset operations.
 
-This is logical isolation for a controlled demo. All clients share one API key, so a holder of that key can choose another valid workspace ID. JWT/OAuth, users, roles, organization membership, malware scanning, rate limiting, and cryptographic tenant isolation are outside the current scope.
+The legacy key is confined to `DOCUQUERY_WORKSPACE_ID`. Optional
+`DOCUQUERY_CREDENTIALS` grants static keys reader/writer/owner roles in explicit
+workspaces; see `.env.example`. Owners alone may reset/reconcile. Workspace rate,
+storage and document limits are enforced. JWT/OAuth, user lifecycle management,
+malware scanning and cryptographic tenant isolation remain outside this demo.
 
 ## Project structure
 
@@ -161,6 +171,24 @@ streamlit run frontend/app.py
 
 The frontend reads `DOCUQUERY_API_BASE_URL`, `DOCUQUERY_API_KEY`, and `DOCUQUERY_WORKSPACE_ID` from the environment.
 
+### Demo controls
+
+- **Answer generation** uses the normal RAG answer path. **Evidence only** searches
+  without Gemini or the answer cache and explicitly labels that no answer was generated.
+- Open the source expander to inspect literal document excerpts and available page
+  numbers. `[Source N]` always refers to the original response order, including
+  when multiple excerpts from one file are grouped together.
+- **Download conversation (.md)** exports this browser session's questions,
+  response statuses/content and citations. It does not create server-side chat
+  history or include credentials/arbitrary response metadata. Source filenames
+  are reduced to basenames; excerpt and chat text remain verbatim in fenced blocks.
+  Review the content before sharing: uploaded documents or your questions may
+  themselves contain sensitive information.
+
+Generation failures and insufficient evidence have distinct labels, retained
+when the page reruns. Evidence-only search is useful for demos without generation
+quota, but a retrieved passage does not by itself establish an answer.
+
 ## API
 
 The examples assume:
@@ -198,6 +226,11 @@ curl http://localhost:8000/api/v1/documents/status/<task-id> \
 
 A task ID is visible only from the workspace that created it. Worker failures return a generic message without internal paths or exception details.
 
+Durable SQLite terminal state (success, failure, reset cancellation) is returned
+before querying Redis/Celery. A workspace-local task row also establishes ownership
+when the Redis mapping expires. Legacy tasks without a local row still require the
+Redis workspace mapping; nonterminal broker outages remain HTTP 503.
+
 ### List documents
 
 ```bash
@@ -206,7 +239,34 @@ curl http://localhost:8000/api/v1/documents \
   -H "X-Workspace-ID: $WORKSPACE"
 ```
 
+### Delete one managed document
+
+Fetch `GET /api/v1/documents/managed` with the same headers to obtain the
+`document_id` and current `revision`, then use an **owner** credential:
+
+```bash
+curl -X DELETE "http://localhost:8000/api/v1/documents/<document-id>?revision=<revision>" \
+  -H "X-API-Key: $API_KEY" \
+  -H "X-Workspace-ID: $WORKSPACE"
+```
+
+The sidebar also provides selection and explicit confirmation. Deletion immediately
+unpublishes that revision and invalidates the workspace answer cache. A stale
+revision or active upload returns HTTP 409; refresh or wait for processing to finish.
+Repeating a completed deletion is a no-op. If `cleanup_pending` is true, retry
+`POST /api/v1/workspace/reconcile` after storage recovers.
+
+Legacy-only files are not offered for deletion. Tombstones keep older unversioned
+vectors of a deleted managed document out of search; they do not erase those legacy
+copies, backups, historical chat/exports, or responses already in flight. See
+[recovery and upgrade guidance](docs/recovery.md).
+
 ### Query
+
+Optional `retrieval_only: true` returns evidence without Gemini or answer-cache
+access. Its nonempty status is `retrieved` and `answer` is empty; ordinary queries
+keep their existing behavior. See [evaluation instructions](evaluation/README.md)
+for bilingual held-out questions and separate abstention/service-error metrics.
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/query \
@@ -255,7 +315,7 @@ curl -X DELETE http://localhost:8000/api/v1/workspace/reset \
   -H "X-Workspace-ID: $WORKSPACE"
 ```
 
-Reset shares a Redis lock with ingestion and deletes only that workspace's uploaded files and Qdrant points.
+Reset shares a local OS workspace lock with ingestion and deletes only that workspace's uploaded files and Qdrant points.
 
 ## Testing
 
@@ -310,16 +370,26 @@ see [evaluation guide](evaluation/README.md). Human faithfulness/relevance grade
 are deliberately left unscored until reviewed; no fabricated quality scores are
 provided.
 
+The [Vietnamese retrieval experiments](evaluation/vietnamese/README.md) include
+calibration-only model selection, frozen-revision replay, per-query error analysis
+and an explicit promotion gate. Both multilingual candidates failed the recorded
+gate; the default model is unchanged. These small synthetic experiments measure
+retrieval, not generated-answer safety or production Vietnamese quality.
+
 ## Upgrade note
 
-Vectors created before workspace metadata was introduced are intentionally invisible to filtered retrieval. After upgrading, restart the API and worker, then re-ingest documents into the desired workspace. Existing root-level upload files can be removed manually after confirming they are no longer needed.
+Read [storage upgrade and recovery](docs/recovery.md) before deployment. API and
+worker must share a local uploads volume including SQLite metadata. Stop old
+workers and back up all stores together before upgrading. Workspace-scoped legacy
+vectors remain eligible until superseded/reset; vectors with no workspace remain
+invisible. Do not delete old files or metadata as an automatic migration step.
 
 ## Current limitations
 
-- Shared static API key instead of user/role authorization.
+- Static key/workspace roles, without identity-provider integration or user lifecycle management.
 - Dense retrieval without sparse search or reranking.
 - Text-only PDF extraction; scanned documents need OCR before upload.
-- No document metadata database or per-document deletion endpoint.
+- Single-host SQLite metadata/OS locking; no distributed-host guarantee. Per-document deletion requires a managed revision and no active workspace uploads.
 - No production monitoring, distributed tracing, or load-test guarantee.
 - The evaluation fixture is small and synthetic; broader held-out data and human grading are needed.
 
