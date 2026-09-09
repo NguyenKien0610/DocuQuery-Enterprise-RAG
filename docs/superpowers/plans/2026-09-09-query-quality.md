@@ -27,7 +27,7 @@ modification of existing user data. Historical experiment reports stay unchanged
   document experiments. Score relevant evidence spans as well as filenames.
   Add separate human grading import/summary for support versus citation syntax;
   reject missing/duplicate/invalid grades rather than fabricate quality scores.
-- [ ] Verify focused RED/GREEN, full pytest, real Redis/Qdrant, Ruff/Mypy, Docker.
+- [x] Verify focused RED/GREEN, full pytest, real Redis/Qdrant, Ruff/Mypy, Docker.
   Run actual local embedding retrieval baseline in disposable namespaces if
   available; report quality separately from software correctness. No paid LLM
   calls for testing; deterministic provider doubles at external boundaries.
@@ -48,3 +48,9 @@ retrieved evidence rather than abstaining (abstention recall 0.0); this is a
 quality finding, not a promotion result. The first pre-freeze baseline was
 discarded rather than committed after a fixture changed; no existing report or
 user document was modified.
+
+Final verification: 212 passed with `DOCUQUERY_INTEGRATION=1`; the real
+Redis/Qdrant subset passed after Docker was restarted (the first full run lost
+the Docker daemon mid-test, not a software assertion). Ruff and Mypy passed
+across 32 source files, and API/worker/frontend Docker images built. No Gemini
+call occurred during the recorded retrieval baseline.
