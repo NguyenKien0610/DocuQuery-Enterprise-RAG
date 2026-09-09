@@ -147,6 +147,13 @@ def test_real_delete_invalidates_cache_and_never_revives_legacy_vectors(monkeypa
         answer = rag.ask_question("alpha?", workspace)
         assert answer["cached"] is False
         assert answer["status"] == "insufficient_context"
+        monkeypatch.setattr(rag, "_invoke_llm", lambda prompt: SimpleNamespace(content='{"query":"alpha?"}'))
+        followup = rag.ask_question("What about that policy?", workspace, history=[
+            {"role": "user", "content": "alpha?"},
+            {"role": "assistant", "content": "alpha legacy policy [Source 1]"},
+        ])
+        assert followup["status"] == "insufficient_context"
+        assert followup["context"] == []
         assert rag.ask_question("beta?", workspace, retrieval_only=True)["context"][0]["source_file"] == "beta.txt"
         assert rag.ask_question("alpha?", other, retrieval_only=True)["context"][0]["source_file"] == "legacy.txt"
         assert rag.qdrant_client.count(collection_name=collection, exact=True).count == 3

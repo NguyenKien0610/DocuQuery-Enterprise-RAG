@@ -259,7 +259,12 @@ def delete_document_endpoint(
 @app.post("/api/v1/query", response_model=QueryResponse)
 def query_documents(payload: QueryRequest, context: RequestContextDep) -> QueryResponse:
     try:
-        if payload.retrieval_only:
+        if payload.history and not payload.retrieval_only:
+            result = ask_question(
+                payload.query, context.workspace_id, use_cache=False,
+                history=[message.model_dump() for message in payload.history],
+            )
+        elif payload.retrieval_only:
             result = ask_question(
                 payload.query, context.workspace_id, retrieval_only=True
             )

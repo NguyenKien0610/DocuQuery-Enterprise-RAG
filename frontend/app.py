@@ -19,7 +19,7 @@ TASK_POLL_INTERVAL_SECONDS = 2
 TASK_POLL_TIMEOUT_SECONDS = 300
 STATUS_LABELS = {
     "generated": "Generated answer",
-    "retrieved": "Evidence only — no generated answer",
+    "retrieved": "Evidence available — no generated answer (evidence-only mode or citation check did not pass)",
     "degraded": "Generation unavailable — not a complete generated answer",
     "insufficient_context": "Insufficient evidence — no supported answer",
     "error": "Request failed",
@@ -153,11 +153,25 @@ def fetch_documents() -> list[str]:
     return [str(document) for document in documents]
 
 
-def query_backend(question: str, *, retrieval_only: bool = False) -> tuple[str, bool, list[dict[str, object]], str]:
+def conversation_history(messages: list[dict]) -> list[dict[str, str]]:
+    turns: list[dict[str, str]] = []
+    for user, assistant in zip(messages, messages[1:]):
+        if user.get("role") != "user" or assistant.get("role") != "assistant" or assistant.get("status") != "generated":
+            continue
+        question, answer = str(user.get("content", "")).strip(), str(assistant.get("content", "")).strip()
+        if question and answer:
+            turns.extend([{"role": "user", "content": question[:4000]}, {"role": "assistant", "content": answer[:4000]}])
+    return turns[-6:]
+
+
+def query_backend(question: str, *, retrieval_only: bool = False, history: list[dict[str, str]] | None = None) -> tuple[str, bool, list[dict[str, object]], str]:
+    request_payload: dict[str, object] = {"query": question, "retrieval_only": retrieval_only}
+    if history and not retrieval_only:
+        request_payload["history"] = history
     response = _request(
         "POST",
         QUERY_ENDPOINT,
-        json={"query": question, "retrieval_only": retrieval_only},
+        json=request_payload,
         timeout=REQUEST_TIMEOUT,
     )
     response.raise_for_status()
@@ -451,13 +465,17 @@ def render_assistant_message(message: dict, *, stream: bool = False) -> None:
 
 
 def handle_question(question: str, *, retrieval_only: bool) -> None:
+    history = conversation_history(st.session_state.messages) if not retrieval_only else []
     st.session_state.messages.append({"role": "user", "content": question})
     with st.chat_message("user"):
         st.markdown(question)
 
     with st.chat_message("assistant"):
         try:
-            answer, cached, context, status = query_backend(question, retrieval_only=retrieval_only)
+            if history:
+                answer, cached, context, status = query_backend(question, retrieval_only=retrieval_only, history=history)
+            else:
+                answer, cached, context, status = query_backend(question, retrieval_only=retrieval_only)
             message = {
                 "role": "assistant", "content": answer if status != "retrieved" else "",
                 "cached": cached, "context": context, "status": status,
@@ -485,7 +503,9 @@ def main() -> None:
     st.caption("Upload PDF, DOCX or TXT documents, then inspect evidence or generate an answer.")
     mode = st.radio("Query mode", ["Answer generation", "Evidence only"], horizontal=True)
     if mode == "Evidence only":
-        st.caption("Search evidence without Gemini or the answer cache. Similarity is not answer confidence.")
+        st.caption("Search evidence without Gemini or the answer cache. Ask a standalone question; history is not used. Similarity is not answer confidence.")
+    else:
+        st.caption("Up to three prior answered turns may be sent to Gemini to clarify follow-ups (an extra model step, no answer cache). Citation checks validate source numbers, not factual accuracy.")
     render_sidebar()
     render_chat_history()
     question = st.chat_input("Ask a question about your uploaded documents")

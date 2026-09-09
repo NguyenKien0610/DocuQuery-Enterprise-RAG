@@ -263,6 +263,36 @@ copies, backups, historical chat/exports, or responses already in flight. See
 
 ### Query
 
+Answer caching is best-effort: Redis read/write failures do not discard a usable
+answer. Malformed cache entries are misses. Authentication, publication metadata
+and search failures are not bypassed. New answers and cache hits must contain
+canonical, in-range `[Source N]` citations; invalid citations return `retrieved`
+with an empty answer and `error_code: invalid_citations`, preserving the evidence.
+This checks citation syntax/indexes, **not factual support**. Old answer-cache
+keys expire naturally under their existing TTL and are not reused by this version.
+
+Optional `history` contains at most three completed user/assistant pairs (six
+messages, up to 4000 characters each):
+
+```json
+{"query":"How long does it last?","history":[{"role":"user","content":"What is covered by the warranty?"},{"role":"assistant","content":"Manufacturing defects [Source 1]."}]}
+```
+
+With history, the existing model first rewrites a standalone search question,
+then retrieves current published evidence. History is untrusted context, never
+answer evidence, and follow-up requests bypass the shared answer cache. This adds
+a model step, latency and possible provider cost; rewrite failures return
+`degraded` / `rewrite_unavailable` and ask for a standalone question. The server
+does not persist conversation history. The frontend sends only the three latest
+answered pairs, without source metadata, truncating each message to 4000 characters.
+`retrieval_only` ignores history, never invokes the model, and requires a standalone
+question. Previously deleted documents remain excluded even if mentioned in history.
+
+For chunk-level Vietnamese retrieval measurements, use
+[the expanded evaluation corpus](evaluation/vietnamese/chunks/README.md).
+For separate human checks of whether answers are actually supported by their
+sources, use [answer grading](evaluation/answer-grading.md).
+
 Optional `retrieval_only: true` returns evidence without Gemini or answer-cache
 access. Its nonempty status is `retrieved` and `answer` is empty; ordinary queries
 keep their existing behavior. See [evaluation instructions](evaluation/README.md)

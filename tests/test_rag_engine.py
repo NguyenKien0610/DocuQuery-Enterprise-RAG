@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 import textwrap
@@ -77,7 +78,11 @@ def test_ask_question_uses_current_corpus_version(monkeypatch):
     monkeypatch.setattr(
         rag_engine.redis_client,
         "get",
-        lambda key: seen.append(key) or "cached answer",
+        lambda key: seen.append(key) or json.dumps({
+            "answer": "cached answer [Source 1]", "status": "generated", "context": [
+                {"source_file": "policy.txt", "document_id": "a", "chunk_index": 0, "text": "Evidence"},
+            ],
+        }),
     )
 
     result = rag_engine.ask_question("Question", "team-a")

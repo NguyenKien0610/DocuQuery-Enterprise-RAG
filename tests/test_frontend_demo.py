@@ -16,6 +16,33 @@ class _Response:
         return self._payload
 
 
+def test_followup_ui_sends_only_three_completed_turns(monkeypatch):
+    requests = []
+    def request(method, url, **kwargs):
+        if method == "GET":
+            return _Response({"documents": []})
+        requests.append(kwargs["json"])
+        return _Response({"answer": "12 months [Source 1]", "cached": False,
+                          "status": "generated", "context": []})
+    monkeypatch.setattr("requests.request", request)
+    at = AppTest.from_file(str(Path(__file__).parents[1] / "frontend/app.py"), default_timeout=10).run()
+    messages = []
+    for index in range(4):
+        messages.extend([{"role": "user", "content": f"Question {index}"},
+                         {"role": "assistant", "content": f"Answer {index}", "status": "generated", "api_key": "private", "context": [{"text": "private source"}]}])
+    at.session_state["messages"] = messages
+    at.chat_input[0].set_value("How long?").run()
+    assert not at.exception
+    assert requests[-1]["history"] == [
+        {"role": "user", "content": "Question 1"}, {"role": "assistant", "content": "Answer 1"},
+        {"role": "user", "content": "Question 2"}, {"role": "assistant", "content": "Answer 2"},
+        {"role": "user", "content": "Question 3"}, {"role": "assistant", "content": "Answer 3"},
+    ]
+    at.radio[0].set_value("Evidence only").run()
+    at.chat_input[0].set_value("Warranty duration?").run()
+    assert "history" not in requests[-1]
+
+
 def test_streamlit_demo_mode_status_unicode_and_download(monkeypatch):
     calls = []
     downloads = []
