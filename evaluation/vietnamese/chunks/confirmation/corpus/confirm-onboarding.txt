@@ -1,0 +1,11 @@
+Chính sách hội nhập nhân viên Sao Mai (tài liệu giả lập). Chương trình hội nhập bắt buộc kéo dài 7 ngày làm việc. Nhân viên mới phải hoàn thành toàn bộ lịch học và bài kiểm tra an toàn trước khi nhận quyền truy cập production.
+
+Trong ngày đầu, phòng nhân sự giới thiệu nội quy, phúc lợi và kênh hỗ trợ. Người quản lý cung cấp mục tiêu thử việc và người hướng dẫn cho từng nhân viên.
+
+Nhân viên vắng quá một buổi phải học bù trong tuần kế tiếp. Kết quả hoàn thành được lưu trong hồ sơ đào tạo, không lưu trong hệ thống chấm công.
+
+Quyền truy cập ban đầu chỉ cho phép đọc tài liệu hướng dẫn. Chủ hệ thống cấp thêm quyền sau khi nhận được xác nhận từ quản lý trực tiếp.
+
+Chính sách này không quy định số ngày nghỉ phép năm, học phí cho người thân hay tiền thưởng doanh thu. Các câu hỏi đó được chuyển đến bộ phận phụ trách tương ứng.
+
+Người hướng dẫn xác nhận từng mốc hoàn thành trong cổng đào tạo. Hồ sơ hội nhập được khóa sau khi quản lý ký xác nhận và chỉ có nhân sự mới được chỉnh sửa.

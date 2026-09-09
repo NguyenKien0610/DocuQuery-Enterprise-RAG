@@ -1,0 +1,942 @@
+{
+  "schema_version": 1,
+  "evaluator": "chunk-retrieval-v1",
+  "evaluated_at": "2026-09-09T03:15:50.889114+00:00",
+  "workspace": "chunk-cal-3fa4260c2ad6405f9fd34db6a83f8a0c",
+  "k": 5,
+  "retrieval_only": true,
+  "run_label": null,
+  "human_grades": null,
+  "server_config": {
+    "requested_k": 5,
+    "effective_top_k": null,
+    "score_threshold": null,
+    "embedding_model": null,
+    "verification": "not_returned_by_public_api"
+  },
+  "corpus": {
+    "path": "evaluation\\vietnamese\\chunks\\calibration\\corpus",
+    "documents": [
+      "cal-expenses.txt",
+      "cal-leave.txt",
+      "cal-library.txt",
+      "cal-procurement.txt",
+      "cal-security.txt",
+      "cal-support.txt",
+      "cal-training.txt",
+      "cal-visitors.txt"
+    ],
+    "document_count": 8,
+    "files_sha256": {
+      "cal-expenses.txt": "ce7d34432a6f74f4d64cdb8be6b09bf4de8c4dd6872411071a35aa40fe20581c",
+      "cal-leave.txt": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+      "cal-library.txt": "7138ee21c1a5d7f2db8aa8d362179322045bbe9c9fffd98226da65fe13bf851c",
+      "cal-procurement.txt": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+      "cal-security.txt": "babe7ad7f385e84436ea811be8f219ef73c807f5480ca8b414b64d06c4d9cb88",
+      "cal-support.txt": "4fa9b322b5355f61a82c659a062e335fef11248c694f7224c4f935e9252905e8",
+      "cal-training.txt": "4234748b8ecda6ca6f35744acb699158a50048d9d4bbc62d4a04ccb3be4246ef",
+      "cal-visitors.txt": "51a6f69e6446923aaa2a55e1650ffe560a65c3b93e78c580b0c141b0c8a29ae0"
+    },
+    "sha256": "b3a62a686d3282ca60396db22fbb8293529861456437dab533a5ca3f4786a4c5"
+  },
+  "questions": {
+    "path": "evaluation\\vietnamese\\chunks\\calibration\\questions.json",
+    "count": 12
+  },
+  "questions_sha256": "06cdc9f15f8bb3125f9a076577fa7d657ef0d4bdf0663d07e43d565d8e0836e4",
+  "input_fingerprint_sha256": "35830a749c4bf33c1cf69e437c9d1325fff1dff265f9fde263ba9a71ce133281",
+  "config": {
+    "base_url": "http://local-evaluation",
+    "workspace": "chunk-cal-3fa4260c2ad6405f9fd34db6a83f8a0c",
+    "k": 5,
+    "concurrency": 1,
+    "timeout": 120,
+    "poll_interval": 0.01,
+    "max_wait": 600,
+    "ingest": false,
+    "retrieval_only": true,
+    "use_cache": false
+  },
+  "config_sha256": "5f201c4a2adbf212cf86ba9280cd7326abfe170de72e67e790d16e2e5157ca70",
+  "count": 12,
+  "answerable_count": 8,
+  "unanswerable_count": 4,
+  "document_metrics": {
+    "recall_at_k": 0.75,
+    "mrr": 0.6041666666666666
+  },
+  "evidence_metrics": {
+    "recall_at_k": 0.75,
+    "mrr": 0.5833333333333334
+  },
+  "abstention": {
+    "precision": null,
+    "recall": 0.0,
+    "answerable_abstention_rate": 0.0
+  },
+  "failure_rate": 0.0,
+  "status_counts": {
+    "retrieved": 12
+  },
+  "results": [
+    {
+      "id": "cal-01",
+      "language": "vi",
+      "query_type": "paraphrase",
+      "query": "Mỗi năm nhân viên được hưởng bao nhiêu ngày phép có lương?",
+      "sources": [
+        "cal-leave.txt"
+      ],
+      "evidence_spans": [
+        {
+          "source_file": "cal-leave.txt",
+          "text": "Nhân viên được nghỉ phép hưởng lương 14 ngày trong mỗi năm dương lịch."
+        }
+      ],
+      "reference": "14 ngày.",
+      "answerable": true,
+      "document_recall_at_k": 1.0,
+      "document_mrr": 0.3333333333333333,
+      "evidence_recall_at_k": 1.0,
+      "evidence_mrr": 0.3333333333333333,
+      "retrieved_sources": [
+        "cal-training.txt",
+        "cal-procurement.txt",
+        "cal-leave.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Mỗi năm nhân viên được hưởng bao nhiêu ngày phép có lương?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-training.txt",
+            "document_id": "4234748b8ecda6ca6f35744acb699158a50048d9d4bbc62d4a04ccb3be4246ef",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách đào tạo Sao Mai (tài liệu giả lập). Mỗi nhân viên có ngân sách học tập 900 USD mỗi năm. Ngân sách dùng cho khóa học, sách chuyên môn và lệ phí thi có liên quan đến công việc.\n\nYêu cầu đào tạo phải được quản lý trực tiếp phê duyệt trước khi đăng ký. Bộ phận nhân sự xác nhận ngân sách còn lại và lưu chứng từ thanh toán.\n\nNhân viên được nghỉ có lương tối đa 5 ngày để tham gia chương trình đào tạo bắt buộc. Lệ phí thi chứng chỉ chỉ được hoàn trả sau khi nhân viên gửi bằng chứng đã đạt.\n\nKhóa hội nhập cho nhân viên mới kéo dài 4 ngày làm việc. Người hướng dẫn cập nhật danh sách tham dự và kết quả hoàn thành vào cuối khóa.\n\nChính sách không nêu hỗ trợ học phí cho con của nhân viên, tiền thưởng doanh thu hay số điện thoại của quản lý. Các khóa ngoài chuyên môn cần phê duyệt bổ sung.\n\nNgười học chịu trách nhiệm hoàn thành bài tập và phản hồi chất lượng khóa học. Nhân sự tổng hợp tỷ lệ hoàn thành theo quý để điều chỉnh lịch đào tạo kế tiếp."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Chính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua.\n\nHồ sơ mua sắm được phân quyền theo vai trò và chỉ người được giao nhiệm vụ mới có thể sửa. Bộ phận kiểm toán đối chiếu hồ sơ với biên bản nhận hàng vào cuối mỗi quý."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định nghỉ phép của công ty Sao Mai (tài liệu giả lập). Nhân viên được nghỉ phép hưởng lương 14 ngày trong mỗi năm dương lịch. Năm phép bắt đầu từ ngày 01 tháng 01 và kết thúc vào ngày 31 tháng 12.\n\nNgười lao động cần gửi yêu cầu nghỉ cho quản lý trực tiếp ít nhất năm ngày làm việc trước ngày bắt đầu nghỉ, trừ trường hợp khẩn cấp. Đơn nghỉ được duyệt phải được lưu trong hệ thống nhân sự.\n\nNgày nghỉ chưa sử dụng không tự động chuyển sang năm sau, ngoại trừ tối đa ba ngày được quản lý phê duyệt bằng văn bản. Nghỉ ốm từ ba ngày liên tiếp trở lên cần có giấy xác nhận của cơ sở y tế.\n\nBộ phận nhân sự kiểm tra số dư phép mỗi quý. Nhân viên nghỉ việc được thanh toán số ngày phép còn lại theo quy định của hợp đồng. Những câu hỏi về nghỉ thai sản không được quy định trong tài liệu này.\n\nMọi mốc thời gian trong chính sách này tính theo ngày làm việc của văn phòng tại Việt Nam. Quản lý không được yêu cầu nhân viên sử dụng ngày phép cho thời gian đào tạo bắt buộc."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách mua sắm của công ty Sao Mai (tài liệu giả lập). Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng. Các đơn dưới ngưỡng này do người phụ trách ngân sách xác nhận.\n\nNhân viên phải thu thập ít nhất hai báo giá khi mua hàng hóa thông thường. Hồ sơ báo giá và quyết định lựa chọn nhà cung cấp được lưu trong mười tám tháng. Không được chia nhỏ một nhu cầu thành nhiều đơn để né cấp phê duyệt.\n\nNhà cung cấp được thanh toán trong vòng hai mươi mốt ngày kể từ khi phòng kế toán nhận đủ hóa đơn hợp lệ và biên bản nghiệm thu. Hóa đơn thiếu thông tin sẽ được trả lại để bổ sung.\n\nHàng hóa có giá trị cao phải được kiểm kê khi nhận. Bộ phận mua sắm ghi nhận số sê-ri, tình trạng và người tiếp nhận trong biên bản bàn giao.\n\nChính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Biểu mẫu điện tử ghi nhận người gửi, người duyệt và thời điểm xử lý. Nhân sự chỉ thay đổi số dư sau khi có phê duyệt hợp lệ; bản ghi cũ được giữ để đối soát cuối năm."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.0658408999997846
+    },
+    {
+      "id": "cal-02",
+      "language": "vi",
+      "query_type": "no_diacritic",
+      "query": "Don mua hang tu 12 trieu dong can ai phe duyet?",
+      "sources": [
+        "cal-procurement.txt"
+      ],
+      "evidence_spans": [
+        {
+          "source_file": "cal-procurement.txt",
+          "text": "Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng."
+        }
+      ],
+      "reference": "Trưởng phòng.",
+      "answerable": true,
+      "document_recall_at_k": 1.0,
+      "document_mrr": 1.0,
+      "evidence_recall_at_k": 1.0,
+      "evidence_mrr": 1.0,
+      "retrieved_sources": [
+        "cal-procurement.txt",
+        "cal-leave.txt",
+        "cal-library.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Don mua hang tu 12 trieu dong can ai phe duyet?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách mua sắm của công ty Sao Mai (tài liệu giả lập). Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng. Các đơn dưới ngưỡng này do người phụ trách ngân sách xác nhận.\n\nNhân viên phải thu thập ít nhất hai báo giá khi mua hàng hóa thông thường. Hồ sơ báo giá và quyết định lựa chọn nhà cung cấp được lưu trong mười tám tháng. Không được chia nhỏ một nhu cầu thành nhiều đơn để né cấp phê duyệt.\n\nNhà cung cấp được thanh toán trong vòng hai mươi mốt ngày kể từ khi phòng kế toán nhận đủ hóa đơn hợp lệ và biên bản nghiệm thu. Hóa đơn thiếu thông tin sẽ được trả lại để bổ sung.\n\nHàng hóa có giá trị cao phải được kiểm kê khi nhận. Bộ phận mua sắm ghi nhận số sê-ri, tình trạng và người tiếp nhận trong biên bản bàn giao.\n\nChính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Chính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua.\n\nHồ sơ mua sắm được phân quyền theo vai trò và chỉ người được giao nhiệm vụ mới có thể sửa. Bộ phận kiểm toán đối chiếu hồ sơ với biên bản nhận hàng vào cuối mỗi quý."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định nghỉ phép của công ty Sao Mai (tài liệu giả lập). Nhân viên được nghỉ phép hưởng lương 14 ngày trong mỗi năm dương lịch. Năm phép bắt đầu từ ngày 01 tháng 01 và kết thúc vào ngày 31 tháng 12.\n\nNgười lao động cần gửi yêu cầu nghỉ cho quản lý trực tiếp ít nhất năm ngày làm việc trước ngày bắt đầu nghỉ, trừ trường hợp khẩn cấp. Đơn nghỉ được duyệt phải được lưu trong hệ thống nhân sự.\n\nNgày nghỉ chưa sử dụng không tự động chuyển sang năm sau, ngoại trừ tối đa ba ngày được quản lý phê duyệt bằng văn bản. Nghỉ ốm từ ba ngày liên tiếp trở lên cần có giấy xác nhận của cơ sở y tế.\n\nBộ phận nhân sự kiểm tra số dư phép mỗi quý. Nhân viên nghỉ việc được thanh toán số ngày phép còn lại theo quy định của hợp đồng. Những câu hỏi về nghỉ thai sản không được quy định trong tài liệu này.\n\nMọi mốc thời gian trong chính sách này tính theo ngày làm việc của văn phòng tại Việt Nam. Quản lý không được yêu cầu nhân viên sử dụng ngày phép cho thời gian đào tạo bắt buộc."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Biểu mẫu điện tử ghi nhận người gửi, người duyệt và thời điểm xử lý. Nhân sự chỉ thay đổi số dư sau khi có phê duyệt hợp lệ; bản ghi cũ được giữ để đối soát cuối năm."
+          },
+          {
+            "source_file": "cal-library.txt",
+            "document_id": "7138ee21c1a5d7f2db8aa8d362179322045bbe9c9fffd98226da65fe13bf851c",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định thư viện Sao Mai (tài liệu giả lập). Mỗi độc giả được mượn tối đa 6 cuốn sách cùng lúc. Thời hạn mượn tiêu chuẩn là 21 ngày kể từ ngày nhận sách.\n\nĐộc giả có thể gia hạn một lần thêm 14 ngày nếu sách chưa có người đặt trước. Sách tham khảo và ấn phẩm có dấu đỏ chỉ được đọc tại chỗ, không được mang ra khỏi phòng đọc.\n\nKhi nhận sách, độc giả kiểm tra tình trạng bìa và báo ngay cho thủ thư nếu sách bị rách. Thẻ thư viện là tài sản cá nhân và không được cho người khác mượn.\n\nThư viện mở cửa từ 08 giờ đến 17 giờ vào các ngày làm việc. Lịch đóng cửa định kỳ được đăng trên bảng thông báo trước ít nhất một tuần.\n\nTài liệu này không quy định tiền phạt cho sách trả muộn, phí cấp thẻ hay số điện thoại riêng của trưởng thư viện. Mọi yêu cầu đặc biệt cần gửi qua quầy tiếp nhận.\n\nThủ thư lập danh sách sách cần bổ sung dựa trên lượt mượn và đề xuất ngân sách cho quản lý. Bản ghi mượn trả được lưu trong hệ thống thư viện để phục vụ kiểm kê định kỳ."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.03293870000015886
+    },
+    {
+      "id": "cal-03",
+      "language": "vi",
+      "query_type": "paraphrase",
+      "query": "Một độc giả có thể giữ cùng lúc tối đa mấy cuốn sách?",
+      "sources": [
+        "cal-library.txt"
+      ],
+      "evidence_spans": [
+        {
+          "source_file": "cal-library.txt",
+          "text": "Mỗi độc giả được mượn tối đa 6 cuốn sách cùng lúc."
+        }
+      ],
+      "reference": "6 cuốn.",
+      "answerable": true,
+      "document_recall_at_k": 1.0,
+      "document_mrr": 1.0,
+      "evidence_recall_at_k": 1.0,
+      "evidence_mrr": 1.0,
+      "retrieved_sources": [
+        "cal-library.txt",
+        "cal-training.txt",
+        "cal-visitors.txt",
+        "cal-leave.txt",
+        "cal-procurement.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Một độc giả có thể giữ cùng lúc tối đa mấy cuốn sách?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-library.txt",
+            "document_id": "7138ee21c1a5d7f2db8aa8d362179322045bbe9c9fffd98226da65fe13bf851c",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định thư viện Sao Mai (tài liệu giả lập). Mỗi độc giả được mượn tối đa 6 cuốn sách cùng lúc. Thời hạn mượn tiêu chuẩn là 21 ngày kể từ ngày nhận sách.\n\nĐộc giả có thể gia hạn một lần thêm 14 ngày nếu sách chưa có người đặt trước. Sách tham khảo và ấn phẩm có dấu đỏ chỉ được đọc tại chỗ, không được mang ra khỏi phòng đọc.\n\nKhi nhận sách, độc giả kiểm tra tình trạng bìa và báo ngay cho thủ thư nếu sách bị rách. Thẻ thư viện là tài sản cá nhân và không được cho người khác mượn.\n\nThư viện mở cửa từ 08 giờ đến 17 giờ vào các ngày làm việc. Lịch đóng cửa định kỳ được đăng trên bảng thông báo trước ít nhất một tuần.\n\nTài liệu này không quy định tiền phạt cho sách trả muộn, phí cấp thẻ hay số điện thoại riêng của trưởng thư viện. Mọi yêu cầu đặc biệt cần gửi qua quầy tiếp nhận.\n\nThủ thư lập danh sách sách cần bổ sung dựa trên lượt mượn và đề xuất ngân sách cho quản lý. Bản ghi mượn trả được lưu trong hệ thống thư viện để phục vụ kiểm kê định kỳ."
+          },
+          {
+            "source_file": "cal-training.txt",
+            "document_id": "4234748b8ecda6ca6f35744acb699158a50048d9d4bbc62d4a04ccb3be4246ef",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách đào tạo Sao Mai (tài liệu giả lập). Mỗi nhân viên có ngân sách học tập 900 USD mỗi năm. Ngân sách dùng cho khóa học, sách chuyên môn và lệ phí thi có liên quan đến công việc.\n\nYêu cầu đào tạo phải được quản lý trực tiếp phê duyệt trước khi đăng ký. Bộ phận nhân sự xác nhận ngân sách còn lại và lưu chứng từ thanh toán.\n\nNhân viên được nghỉ có lương tối đa 5 ngày để tham gia chương trình đào tạo bắt buộc. Lệ phí thi chứng chỉ chỉ được hoàn trả sau khi nhân viên gửi bằng chứng đã đạt.\n\nKhóa hội nhập cho nhân viên mới kéo dài 4 ngày làm việc. Người hướng dẫn cập nhật danh sách tham dự và kết quả hoàn thành vào cuối khóa.\n\nChính sách không nêu hỗ trợ học phí cho con của nhân viên, tiền thưởng doanh thu hay số điện thoại của quản lý. Các khóa ngoài chuyên môn cần phê duyệt bổ sung.\n\nNgười học chịu trách nhiệm hoàn thành bài tập và phản hồi chất lượng khóa học. Nhân sự tổng hợp tỷ lệ hoàn thành theo quý để điều chỉnh lịch đào tạo kế tiếp."
+          },
+          {
+            "source_file": "cal-visitors.txt",
+            "document_id": "51a6f69e6446923aaa2a55e1650ffe560a65c3b93e78c580b0c141b0c8a29ae0",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy trình khách đến văn phòng Sao Mai (tài liệu giả lập). Khách phải đăng ký trước ít nhất 3 ngày làm việc và nêu rõ người liên hệ, mục đích cùng thời gian dự kiến đến.\n\nKhi tới nơi, khách xuất trình giấy tờ có ảnh tại quầy lễ tân. Nhân viên tiếp đón cấp thẻ khách tạm thời và thông báo các khu vực được phép đi lại.\n\nThẻ khách phải được trả tại quầy khi rời tòa nhà. Khách không được tự vào phòng máy chủ, kho hồ sơ hoặc khu vực làm việc chưa được người phụ trách cho phép.\n\nGiờ tiếp khách thông thường là từ 09 giờ đến 16 giờ trong ngày làm việc. Cuộc gặp ngoài giờ cần được trưởng bộ phận phê duyệt trước.\n\nQuy trình này không công bố địa chỉ nhà riêng, số điện thoại cá nhân hay mức phụ cấp của nhân viên lễ tân. Khách làm mất thẻ phải báo ngay để khóa thẻ.\n\nNgười liên hệ chịu trách nhiệm đi cùng khách trong khu vực được cấp phép. Lễ tân lưu nhật ký ra vào theo ngày và chỉ cung cấp bản ghi cho bộ phận an ninh khi có yêu cầu hợp lệ."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Biểu mẫu điện tử ghi nhận người gửi, người duyệt và thời điểm xử lý. Nhân sự chỉ thay đổi số dư sau khi có phê duyệt hợp lệ; bản ghi cũ được giữ để đối soát cuối năm."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách mua sắm của công ty Sao Mai (tài liệu giả lập). Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng. Các đơn dưới ngưỡng này do người phụ trách ngân sách xác nhận.\n\nNhân viên phải thu thập ít nhất hai báo giá khi mua hàng hóa thông thường. Hồ sơ báo giá và quyết định lựa chọn nhà cung cấp được lưu trong mười tám tháng. Không được chia nhỏ một nhu cầu thành nhiều đơn để né cấp phê duyệt.\n\nNhà cung cấp được thanh toán trong vòng hai mươi mốt ngày kể từ khi phòng kế toán nhận đủ hóa đơn hợp lệ và biên bản nghiệm thu. Hóa đơn thiếu thông tin sẽ được trả lại để bổ sung.\n\nHàng hóa có giá trị cao phải được kiểm kê khi nhận. Bộ phận mua sắm ghi nhận số sê-ri, tình trạng và người tiếp nhận trong biên bản bàn giao.\n\nChính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.0330883000005997
+    },
+    {
+      "id": "cal-04",
+      "language": "vi",
+      "query_type": "no_diacritic",
+      "query": "Khach phai dang ky truoc bao nhieu ngay lam viec?",
+      "sources": [
+        "cal-visitors.txt"
+      ],
+      "evidence_spans": [
+        {
+          "source_file": "cal-visitors.txt",
+          "text": "Khách phải đăng ký trước ít nhất 3 ngày làm việc"
+        }
+      ],
+      "reference": "3 ngày làm việc.",
+      "answerable": true,
+      "document_recall_at_k": 1.0,
+      "document_mrr": 1.0,
+      "evidence_recall_at_k": 1.0,
+      "evidence_mrr": 1.0,
+      "retrieved_sources": [
+        "cal-visitors.txt",
+        "cal-training.txt",
+        "cal-library.txt",
+        "cal-leave.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Khach phai dang ky truoc bao nhieu ngay lam viec?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-visitors.txt",
+            "document_id": "51a6f69e6446923aaa2a55e1650ffe560a65c3b93e78c580b0c141b0c8a29ae0",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy trình khách đến văn phòng Sao Mai (tài liệu giả lập). Khách phải đăng ký trước ít nhất 3 ngày làm việc và nêu rõ người liên hệ, mục đích cùng thời gian dự kiến đến.\n\nKhi tới nơi, khách xuất trình giấy tờ có ảnh tại quầy lễ tân. Nhân viên tiếp đón cấp thẻ khách tạm thời và thông báo các khu vực được phép đi lại.\n\nThẻ khách phải được trả tại quầy khi rời tòa nhà. Khách không được tự vào phòng máy chủ, kho hồ sơ hoặc khu vực làm việc chưa được người phụ trách cho phép.\n\nGiờ tiếp khách thông thường là từ 09 giờ đến 16 giờ trong ngày làm việc. Cuộc gặp ngoài giờ cần được trưởng bộ phận phê duyệt trước.\n\nQuy trình này không công bố địa chỉ nhà riêng, số điện thoại cá nhân hay mức phụ cấp của nhân viên lễ tân. Khách làm mất thẻ phải báo ngay để khóa thẻ.\n\nNgười liên hệ chịu trách nhiệm đi cùng khách trong khu vực được cấp phép. Lễ tân lưu nhật ký ra vào theo ngày và chỉ cung cấp bản ghi cho bộ phận an ninh khi có yêu cầu hợp lệ."
+          },
+          {
+            "source_file": "cal-training.txt",
+            "document_id": "4234748b8ecda6ca6f35744acb699158a50048d9d4bbc62d4a04ccb3be4246ef",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách đào tạo Sao Mai (tài liệu giả lập). Mỗi nhân viên có ngân sách học tập 900 USD mỗi năm. Ngân sách dùng cho khóa học, sách chuyên môn và lệ phí thi có liên quan đến công việc.\n\nYêu cầu đào tạo phải được quản lý trực tiếp phê duyệt trước khi đăng ký. Bộ phận nhân sự xác nhận ngân sách còn lại và lưu chứng từ thanh toán.\n\nNhân viên được nghỉ có lương tối đa 5 ngày để tham gia chương trình đào tạo bắt buộc. Lệ phí thi chứng chỉ chỉ được hoàn trả sau khi nhân viên gửi bằng chứng đã đạt.\n\nKhóa hội nhập cho nhân viên mới kéo dài 4 ngày làm việc. Người hướng dẫn cập nhật danh sách tham dự và kết quả hoàn thành vào cuối khóa.\n\nChính sách không nêu hỗ trợ học phí cho con của nhân viên, tiền thưởng doanh thu hay số điện thoại của quản lý. Các khóa ngoài chuyên môn cần phê duyệt bổ sung.\n\nNgười học chịu trách nhiệm hoàn thành bài tập và phản hồi chất lượng khóa học. Nhân sự tổng hợp tỷ lệ hoàn thành theo quý để điều chỉnh lịch đào tạo kế tiếp."
+          },
+          {
+            "source_file": "cal-library.txt",
+            "document_id": "7138ee21c1a5d7f2db8aa8d362179322045bbe9c9fffd98226da65fe13bf851c",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định thư viện Sao Mai (tài liệu giả lập). Mỗi độc giả được mượn tối đa 6 cuốn sách cùng lúc. Thời hạn mượn tiêu chuẩn là 21 ngày kể từ ngày nhận sách.\n\nĐộc giả có thể gia hạn một lần thêm 14 ngày nếu sách chưa có người đặt trước. Sách tham khảo và ấn phẩm có dấu đỏ chỉ được đọc tại chỗ, không được mang ra khỏi phòng đọc.\n\nKhi nhận sách, độc giả kiểm tra tình trạng bìa và báo ngay cho thủ thư nếu sách bị rách. Thẻ thư viện là tài sản cá nhân và không được cho người khác mượn.\n\nThư viện mở cửa từ 08 giờ đến 17 giờ vào các ngày làm việc. Lịch đóng cửa định kỳ được đăng trên bảng thông báo trước ít nhất một tuần.\n\nTài liệu này không quy định tiền phạt cho sách trả muộn, phí cấp thẻ hay số điện thoại riêng của trưởng thư viện. Mọi yêu cầu đặc biệt cần gửi qua quầy tiếp nhận.\n\nThủ thư lập danh sách sách cần bổ sung dựa trên lượt mượn và đề xuất ngân sách cho quản lý. Bản ghi mượn trả được lưu trong hệ thống thư viện để phục vụ kiểm kê định kỳ."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định nghỉ phép của công ty Sao Mai (tài liệu giả lập). Nhân viên được nghỉ phép hưởng lương 14 ngày trong mỗi năm dương lịch. Năm phép bắt đầu từ ngày 01 tháng 01 và kết thúc vào ngày 31 tháng 12.\n\nNgười lao động cần gửi yêu cầu nghỉ cho quản lý trực tiếp ít nhất năm ngày làm việc trước ngày bắt đầu nghỉ, trừ trường hợp khẩn cấp. Đơn nghỉ được duyệt phải được lưu trong hệ thống nhân sự.\n\nNgày nghỉ chưa sử dụng không tự động chuyển sang năm sau, ngoại trừ tối đa ba ngày được quản lý phê duyệt bằng văn bản. Nghỉ ốm từ ba ngày liên tiếp trở lên cần có giấy xác nhận của cơ sở y tế.\n\nBộ phận nhân sự kiểm tra số dư phép mỗi quý. Nhân viên nghỉ việc được thanh toán số ngày phép còn lại theo quy định của hợp đồng. Những câu hỏi về nghỉ thai sản không được quy định trong tài liệu này.\n\nMọi mốc thời gian trong chính sách này tính theo ngày làm việc của văn phòng tại Việt Nam. Quản lý không được yêu cầu nhân viên sử dụng ngày phép cho thời gian đào tạo bắt buộc."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Biểu mẫu điện tử ghi nhận người gửi, người duyệt và thời điểm xử lý. Nhân sự chỉ thay đổi số dư sau khi có phê duyệt hợp lệ; bản ghi cũ được giữ để đối soát cuối năm."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.05352060000041092
+    },
+    {
+      "id": "cal-05",
+      "language": "vi",
+      "query_type": "cross_language",
+      "query": "Việc rà soát quyền truy cập production được thực hiện bao lâu một lần?",
+      "sources": [
+        "cal-security.txt"
+      ],
+      "evidence_spans": [
+        {
+          "source_file": "cal-security.txt",
+          "text": "Production access reviews occur every two months."
+        }
+      ],
+      "reference": "Every two months.",
+      "answerable": true,
+      "document_recall_at_k": 0.0,
+      "document_mrr": 0.0,
+      "evidence_recall_at_k": 0.0,
+      "evidence_mrr": 0.0,
+      "retrieved_sources": [
+        "cal-procurement.txt",
+        "cal-training.txt",
+        "cal-visitors.txt",
+        "cal-leave.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Việc rà soát quyền truy cập production được thực hiện bao lâu một lần?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Chính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua.\n\nHồ sơ mua sắm được phân quyền theo vai trò và chỉ người được giao nhiệm vụ mới có thể sửa. Bộ phận kiểm toán đối chiếu hồ sơ với biên bản nhận hàng vào cuối mỗi quý."
+          },
+          {
+            "source_file": "cal-training.txt",
+            "document_id": "4234748b8ecda6ca6f35744acb699158a50048d9d4bbc62d4a04ccb3be4246ef",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách đào tạo Sao Mai (tài liệu giả lập). Mỗi nhân viên có ngân sách học tập 900 USD mỗi năm. Ngân sách dùng cho khóa học, sách chuyên môn và lệ phí thi có liên quan đến công việc.\n\nYêu cầu đào tạo phải được quản lý trực tiếp phê duyệt trước khi đăng ký. Bộ phận nhân sự xác nhận ngân sách còn lại và lưu chứng từ thanh toán.\n\nNhân viên được nghỉ có lương tối đa 5 ngày để tham gia chương trình đào tạo bắt buộc. Lệ phí thi chứng chỉ chỉ được hoàn trả sau khi nhân viên gửi bằng chứng đã đạt.\n\nKhóa hội nhập cho nhân viên mới kéo dài 4 ngày làm việc. Người hướng dẫn cập nhật danh sách tham dự và kết quả hoàn thành vào cuối khóa.\n\nChính sách không nêu hỗ trợ học phí cho con của nhân viên, tiền thưởng doanh thu hay số điện thoại của quản lý. Các khóa ngoài chuyên môn cần phê duyệt bổ sung.\n\nNgười học chịu trách nhiệm hoàn thành bài tập và phản hồi chất lượng khóa học. Nhân sự tổng hợp tỷ lệ hoàn thành theo quý để điều chỉnh lịch đào tạo kế tiếp."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách mua sắm của công ty Sao Mai (tài liệu giả lập). Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng. Các đơn dưới ngưỡng này do người phụ trách ngân sách xác nhận.\n\nNhân viên phải thu thập ít nhất hai báo giá khi mua hàng hóa thông thường. Hồ sơ báo giá và quyết định lựa chọn nhà cung cấp được lưu trong mười tám tháng. Không được chia nhỏ một nhu cầu thành nhiều đơn để né cấp phê duyệt.\n\nNhà cung cấp được thanh toán trong vòng hai mươi mốt ngày kể từ khi phòng kế toán nhận đủ hóa đơn hợp lệ và biên bản nghiệm thu. Hóa đơn thiếu thông tin sẽ được trả lại để bổ sung.\n\nHàng hóa có giá trị cao phải được kiểm kê khi nhận. Bộ phận mua sắm ghi nhận số sê-ri, tình trạng và người tiếp nhận trong biên bản bàn giao.\n\nChính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua."
+          },
+          {
+            "source_file": "cal-visitors.txt",
+            "document_id": "51a6f69e6446923aaa2a55e1650ffe560a65c3b93e78c580b0c141b0c8a29ae0",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy trình khách đến văn phòng Sao Mai (tài liệu giả lập). Khách phải đăng ký trước ít nhất 3 ngày làm việc và nêu rõ người liên hệ, mục đích cùng thời gian dự kiến đến.\n\nKhi tới nơi, khách xuất trình giấy tờ có ảnh tại quầy lễ tân. Nhân viên tiếp đón cấp thẻ khách tạm thời và thông báo các khu vực được phép đi lại.\n\nThẻ khách phải được trả tại quầy khi rời tòa nhà. Khách không được tự vào phòng máy chủ, kho hồ sơ hoặc khu vực làm việc chưa được người phụ trách cho phép.\n\nGiờ tiếp khách thông thường là từ 09 giờ đến 16 giờ trong ngày làm việc. Cuộc gặp ngoài giờ cần được trưởng bộ phận phê duyệt trước.\n\nQuy trình này không công bố địa chỉ nhà riêng, số điện thoại cá nhân hay mức phụ cấp của nhân viên lễ tân. Khách làm mất thẻ phải báo ngay để khóa thẻ.\n\nNgười liên hệ chịu trách nhiệm đi cùng khách trong khu vực được cấp phép. Lễ tân lưu nhật ký ra vào theo ngày và chỉ cung cấp bản ghi cho bộ phận an ninh khi có yêu cầu hợp lệ."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Biểu mẫu điện tử ghi nhận người gửi, người duyệt và thời điểm xử lý. Nhân sự chỉ thay đổi số dư sau khi có phê duyệt hợp lệ; bản ghi cũ được giữ để đối soát cuối năm."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.046045999999478227
+    },
+    {
+      "id": "cal-06",
+      "language": "vi",
+      "query_type": "cross_language",
+      "query": "Sau chuyến đi công tác phải nộp báo cáo chi phí trong thời hạn nào?",
+      "sources": [
+        "cal-expenses.txt"
+      ],
+      "evidence_spans": [
+        {
+          "source_file": "cal-expenses.txt",
+          "text": "Expense reports must be submitted within 10 calendar days after travel."
+        }
+      ],
+      "reference": "Within 10 calendar days.",
+      "answerable": true,
+      "document_recall_at_k": 0.0,
+      "document_mrr": 0.0,
+      "evidence_recall_at_k": 0.0,
+      "evidence_mrr": 0.0,
+      "retrieved_sources": [
+        "cal-training.txt",
+        "cal-procurement.txt",
+        "cal-library.txt",
+        "cal-visitors.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Sau chuyến đi công tác phải nộp báo cáo chi phí trong thời hạn nào?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-training.txt",
+            "document_id": "4234748b8ecda6ca6f35744acb699158a50048d9d4bbc62d4a04ccb3be4246ef",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách đào tạo Sao Mai (tài liệu giả lập). Mỗi nhân viên có ngân sách học tập 900 USD mỗi năm. Ngân sách dùng cho khóa học, sách chuyên môn và lệ phí thi có liên quan đến công việc.\n\nYêu cầu đào tạo phải được quản lý trực tiếp phê duyệt trước khi đăng ký. Bộ phận nhân sự xác nhận ngân sách còn lại và lưu chứng từ thanh toán.\n\nNhân viên được nghỉ có lương tối đa 5 ngày để tham gia chương trình đào tạo bắt buộc. Lệ phí thi chứng chỉ chỉ được hoàn trả sau khi nhân viên gửi bằng chứng đã đạt.\n\nKhóa hội nhập cho nhân viên mới kéo dài 4 ngày làm việc. Người hướng dẫn cập nhật danh sách tham dự và kết quả hoàn thành vào cuối khóa.\n\nChính sách không nêu hỗ trợ học phí cho con của nhân viên, tiền thưởng doanh thu hay số điện thoại của quản lý. Các khóa ngoài chuyên môn cần phê duyệt bổ sung.\n\nNgười học chịu trách nhiệm hoàn thành bài tập và phản hồi chất lượng khóa học. Nhân sự tổng hợp tỷ lệ hoàn thành theo quý để điều chỉnh lịch đào tạo kế tiếp."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Chính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua.\n\nHồ sơ mua sắm được phân quyền theo vai trò và chỉ người được giao nhiệm vụ mới có thể sửa. Bộ phận kiểm toán đối chiếu hồ sơ với biên bản nhận hàng vào cuối mỗi quý."
+          },
+          {
+            "source_file": "cal-library.txt",
+            "document_id": "7138ee21c1a5d7f2db8aa8d362179322045bbe9c9fffd98226da65fe13bf851c",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định thư viện Sao Mai (tài liệu giả lập). Mỗi độc giả được mượn tối đa 6 cuốn sách cùng lúc. Thời hạn mượn tiêu chuẩn là 21 ngày kể từ ngày nhận sách.\n\nĐộc giả có thể gia hạn một lần thêm 14 ngày nếu sách chưa có người đặt trước. Sách tham khảo và ấn phẩm có dấu đỏ chỉ được đọc tại chỗ, không được mang ra khỏi phòng đọc.\n\nKhi nhận sách, độc giả kiểm tra tình trạng bìa và báo ngay cho thủ thư nếu sách bị rách. Thẻ thư viện là tài sản cá nhân và không được cho người khác mượn.\n\nThư viện mở cửa từ 08 giờ đến 17 giờ vào các ngày làm việc. Lịch đóng cửa định kỳ được đăng trên bảng thông báo trước ít nhất một tuần.\n\nTài liệu này không quy định tiền phạt cho sách trả muộn, phí cấp thẻ hay số điện thoại riêng của trưởng thư viện. Mọi yêu cầu đặc biệt cần gửi qua quầy tiếp nhận.\n\nThủ thư lập danh sách sách cần bổ sung dựa trên lượt mượn và đề xuất ngân sách cho quản lý. Bản ghi mượn trả được lưu trong hệ thống thư viện để phục vụ kiểm kê định kỳ."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách mua sắm của công ty Sao Mai (tài liệu giả lập). Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng. Các đơn dưới ngưỡng này do người phụ trách ngân sách xác nhận.\n\nNhân viên phải thu thập ít nhất hai báo giá khi mua hàng hóa thông thường. Hồ sơ báo giá và quyết định lựa chọn nhà cung cấp được lưu trong mười tám tháng. Không được chia nhỏ một nhu cầu thành nhiều đơn để né cấp phê duyệt.\n\nNhà cung cấp được thanh toán trong vòng hai mươi mốt ngày kể từ khi phòng kế toán nhận đủ hóa đơn hợp lệ và biên bản nghiệm thu. Hóa đơn thiếu thông tin sẽ được trả lại để bổ sung.\n\nHàng hóa có giá trị cao phải được kiểm kê khi nhận. Bộ phận mua sắm ghi nhận số sê-ri, tình trạng và người tiếp nhận trong biên bản bàn giao.\n\nChính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua."
+          },
+          {
+            "source_file": "cal-visitors.txt",
+            "document_id": "51a6f69e6446923aaa2a55e1650ffe560a65c3b93e78c580b0c141b0c8a29ae0",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy trình khách đến văn phòng Sao Mai (tài liệu giả lập). Khách phải đăng ký trước ít nhất 3 ngày làm việc và nêu rõ người liên hệ, mục đích cùng thời gian dự kiến đến.\n\nKhi tới nơi, khách xuất trình giấy tờ có ảnh tại quầy lễ tân. Nhân viên tiếp đón cấp thẻ khách tạm thời và thông báo các khu vực được phép đi lại.\n\nThẻ khách phải được trả tại quầy khi rời tòa nhà. Khách không được tự vào phòng máy chủ, kho hồ sơ hoặc khu vực làm việc chưa được người phụ trách cho phép.\n\nGiờ tiếp khách thông thường là từ 09 giờ đến 16 giờ trong ngày làm việc. Cuộc gặp ngoài giờ cần được trưởng bộ phận phê duyệt trước.\n\nQuy trình này không công bố địa chỉ nhà riêng, số điện thoại cá nhân hay mức phụ cấp của nhân viên lễ tân. Khách làm mất thẻ phải báo ngay để khóa thẻ.\n\nNgười liên hệ chịu trách nhiệm đi cùng khách trong khu vực được cấp phép. Lễ tân lưu nhật ký ra vào theo ngày và chỉ cung cấp bản ghi cho bộ phận an ninh khi có yêu cầu hợp lệ."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.03363340000032622
+    },
+    {
+      "id": "cal-07",
+      "language": "vi",
+      "query_type": "paraphrase",
+      "query": "Ngân sách học tập hàng năm dành cho một nhân viên là bao nhiêu?",
+      "sources": [
+        "cal-training.txt"
+      ],
+      "evidence_spans": [
+        {
+          "source_file": "cal-training.txt",
+          "text": "Mỗi nhân viên có ngân sách học tập 900 USD mỗi năm."
+        }
+      ],
+      "reference": "900 USD.",
+      "answerable": true,
+      "document_recall_at_k": 1.0,
+      "document_mrr": 0.5,
+      "evidence_recall_at_k": 1.0,
+      "evidence_mrr": 0.3333333333333333,
+      "retrieved_sources": [
+        "cal-procurement.txt",
+        "cal-training.txt",
+        "cal-leave.txt",
+        "cal-library.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Ngân sách học tập hàng năm dành cho một nhân viên là bao nhiêu?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách mua sắm của công ty Sao Mai (tài liệu giả lập). Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng. Các đơn dưới ngưỡng này do người phụ trách ngân sách xác nhận.\n\nNhân viên phải thu thập ít nhất hai báo giá khi mua hàng hóa thông thường. Hồ sơ báo giá và quyết định lựa chọn nhà cung cấp được lưu trong mười tám tháng. Không được chia nhỏ một nhu cầu thành nhiều đơn để né cấp phê duyệt.\n\nNhà cung cấp được thanh toán trong vòng hai mươi mốt ngày kể từ khi phòng kế toán nhận đủ hóa đơn hợp lệ và biên bản nghiệm thu. Hóa đơn thiếu thông tin sẽ được trả lại để bổ sung.\n\nHàng hóa có giá trị cao phải được kiểm kê khi nhận. Bộ phận mua sắm ghi nhận số sê-ri, tình trạng và người tiếp nhận trong biên bản bàn giao.\n\nChính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Chính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua.\n\nHồ sơ mua sắm được phân quyền theo vai trò và chỉ người được giao nhiệm vụ mới có thể sửa. Bộ phận kiểm toán đối chiếu hồ sơ với biên bản nhận hàng vào cuối mỗi quý."
+          },
+          {
+            "source_file": "cal-training.txt",
+            "document_id": "4234748b8ecda6ca6f35744acb699158a50048d9d4bbc62d4a04ccb3be4246ef",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách đào tạo Sao Mai (tài liệu giả lập). Mỗi nhân viên có ngân sách học tập 900 USD mỗi năm. Ngân sách dùng cho khóa học, sách chuyên môn và lệ phí thi có liên quan đến công việc.\n\nYêu cầu đào tạo phải được quản lý trực tiếp phê duyệt trước khi đăng ký. Bộ phận nhân sự xác nhận ngân sách còn lại và lưu chứng từ thanh toán.\n\nNhân viên được nghỉ có lương tối đa 5 ngày để tham gia chương trình đào tạo bắt buộc. Lệ phí thi chứng chỉ chỉ được hoàn trả sau khi nhân viên gửi bằng chứng đã đạt.\n\nKhóa hội nhập cho nhân viên mới kéo dài 4 ngày làm việc. Người hướng dẫn cập nhật danh sách tham dự và kết quả hoàn thành vào cuối khóa.\n\nChính sách không nêu hỗ trợ học phí cho con của nhân viên, tiền thưởng doanh thu hay số điện thoại của quản lý. Các khóa ngoài chuyên môn cần phê duyệt bổ sung.\n\nNgười học chịu trách nhiệm hoàn thành bài tập và phản hồi chất lượng khóa học. Nhân sự tổng hợp tỷ lệ hoàn thành theo quý để điều chỉnh lịch đào tạo kế tiếp."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Biểu mẫu điện tử ghi nhận người gửi, người duyệt và thời điểm xử lý. Nhân sự chỉ thay đổi số dư sau khi có phê duyệt hợp lệ; bản ghi cũ được giữ để đối soát cuối năm."
+          },
+          {
+            "source_file": "cal-library.txt",
+            "document_id": "7138ee21c1a5d7f2db8aa8d362179322045bbe9c9fffd98226da65fe13bf851c",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định thư viện Sao Mai (tài liệu giả lập). Mỗi độc giả được mượn tối đa 6 cuốn sách cùng lúc. Thời hạn mượn tiêu chuẩn là 21 ngày kể từ ngày nhận sách.\n\nĐộc giả có thể gia hạn một lần thêm 14 ngày nếu sách chưa có người đặt trước. Sách tham khảo và ấn phẩm có dấu đỏ chỉ được đọc tại chỗ, không được mang ra khỏi phòng đọc.\n\nKhi nhận sách, độc giả kiểm tra tình trạng bìa và báo ngay cho thủ thư nếu sách bị rách. Thẻ thư viện là tài sản cá nhân và không được cho người khác mượn.\n\nThư viện mở cửa từ 08 giờ đến 17 giờ vào các ngày làm việc. Lịch đóng cửa định kỳ được đăng trên bảng thông báo trước ít nhất một tuần.\n\nTài liệu này không quy định tiền phạt cho sách trả muộn, phí cấp thẻ hay số điện thoại riêng của trưởng thư viện. Mọi yêu cầu đặc biệt cần gửi qua quầy tiếp nhận.\n\nThủ thư lập danh sách sách cần bổ sung dựa trên lượt mượn và đề xuất ngân sách cho quản lý. Bản ghi mượn trả được lưu trong hệ thống thư viện để phục vụ kiểm kê định kỳ."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.0323249000002761
+    },
+    {
+      "id": "cal-08",
+      "language": "en",
+      "query_type": "paraphrase",
+      "query": "What is the response target when an incident is critical?",
+      "sources": [
+        "cal-support.txt"
+      ],
+      "evidence_spans": [
+        {
+          "source_file": "cal-support.txt",
+          "text": "Critical incidents receive an initial response within 20 minutes during staffed hours."
+        }
+      ],
+      "reference": "Within 20 minutes.",
+      "answerable": true,
+      "document_recall_at_k": 1.0,
+      "document_mrr": 1.0,
+      "evidence_recall_at_k": 1.0,
+      "evidence_mrr": 1.0,
+      "retrieved_sources": [
+        "cal-support.txt"
+      ],
+      "retrieved_chunk_count": 2,
+      "abstained": false,
+      "response": {
+        "query": "What is the response target when an incident is critical?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-support.txt",
+            "document_id": "4fa9b322b5355f61a82c659a062e335fef11248c694f7224c4f935e9252905e8",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Sao Mai support service policy (synthetic English policy). Critical incidents receive an initial response within 20 minutes during staffed hours. The support lead records the incident owner and the first customer update.\n\nStandard support hours are 08:00 to 18:00 UTC on weekdays. Premium customers receive weekend support from 09:00 to 15:00 UTC, while the basic plan receives the next-business-day response.\n\nStandard support tickets have a response target of two business days. A ticket is not considered resolved until the requester confirms the workaround or the support lead records a closure reason.\n\nCustomers can email the help desk at support@example.test. Emergency security reports should use the security channel instead of the general support address.\n\nThis policy does not specify a warranty period, a meal allowance, or a password encryption algorithm. Service targets are goals for triage, not guarantees of a final fix."
+          },
+          {
+            "source_file": "cal-support.txt",
+            "document_id": "4fa9b322b5355f61a82c659a062e335fef11248c694f7224c4f935e9252905e8",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Support leads review open incidents at the start of each staffed shift. Escalations include the customer impact, the latest update, and the next planned communication time."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.056285599999682745
+    },
+    {
+      "id": "cal-09",
+      "language": "vi",
+      "query_type": "hard_negative",
+      "query": "Công ty trả bao nhiêu tiền phạt khi sách thư viện bị trễ?",
+      "sources": [],
+      "evidence_spans": [],
+      "reference": "Không quy định mức phạt.",
+      "answerable": false,
+      "document_recall_at_k": null,
+      "document_mrr": null,
+      "evidence_recall_at_k": null,
+      "evidence_mrr": null,
+      "retrieved_sources": [
+        "cal-procurement.txt",
+        "cal-library.txt",
+        "cal-training.txt",
+        "cal-leave.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Công ty trả bao nhiêu tiền phạt khi sách thư viện bị trễ?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách mua sắm của công ty Sao Mai (tài liệu giả lập). Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng. Các đơn dưới ngưỡng này do người phụ trách ngân sách xác nhận.\n\nNhân viên phải thu thập ít nhất hai báo giá khi mua hàng hóa thông thường. Hồ sơ báo giá và quyết định lựa chọn nhà cung cấp được lưu trong mười tám tháng. Không được chia nhỏ một nhu cầu thành nhiều đơn để né cấp phê duyệt.\n\nNhà cung cấp được thanh toán trong vòng hai mươi mốt ngày kể từ khi phòng kế toán nhận đủ hóa đơn hợp lệ và biên bản nghiệm thu. Hóa đơn thiếu thông tin sẽ được trả lại để bổ sung.\n\nHàng hóa có giá trị cao phải được kiểm kê khi nhận. Bộ phận mua sắm ghi nhận số sê-ri, tình trạng và người tiếp nhận trong biên bản bàn giao.\n\nChính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua."
+          },
+          {
+            "source_file": "cal-library.txt",
+            "document_id": "7138ee21c1a5d7f2db8aa8d362179322045bbe9c9fffd98226da65fe13bf851c",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định thư viện Sao Mai (tài liệu giả lập). Mỗi độc giả được mượn tối đa 6 cuốn sách cùng lúc. Thời hạn mượn tiêu chuẩn là 21 ngày kể từ ngày nhận sách.\n\nĐộc giả có thể gia hạn một lần thêm 14 ngày nếu sách chưa có người đặt trước. Sách tham khảo và ấn phẩm có dấu đỏ chỉ được đọc tại chỗ, không được mang ra khỏi phòng đọc.\n\nKhi nhận sách, độc giả kiểm tra tình trạng bìa và báo ngay cho thủ thư nếu sách bị rách. Thẻ thư viện là tài sản cá nhân và không được cho người khác mượn.\n\nThư viện mở cửa từ 08 giờ đến 17 giờ vào các ngày làm việc. Lịch đóng cửa định kỳ được đăng trên bảng thông báo trước ít nhất một tuần.\n\nTài liệu này không quy định tiền phạt cho sách trả muộn, phí cấp thẻ hay số điện thoại riêng của trưởng thư viện. Mọi yêu cầu đặc biệt cần gửi qua quầy tiếp nhận.\n\nThủ thư lập danh sách sách cần bổ sung dựa trên lượt mượn và đề xuất ngân sách cho quản lý. Bản ghi mượn trả được lưu trong hệ thống thư viện để phục vụ kiểm kê định kỳ."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Chính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua.\n\nHồ sơ mua sắm được phân quyền theo vai trò và chỉ người được giao nhiệm vụ mới có thể sửa. Bộ phận kiểm toán đối chiếu hồ sơ với biên bản nhận hàng vào cuối mỗi quý."
+          },
+          {
+            "source_file": "cal-training.txt",
+            "document_id": "4234748b8ecda6ca6f35744acb699158a50048d9d4bbc62d4a04ccb3be4246ef",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách đào tạo Sao Mai (tài liệu giả lập). Mỗi nhân viên có ngân sách học tập 900 USD mỗi năm. Ngân sách dùng cho khóa học, sách chuyên môn và lệ phí thi có liên quan đến công việc.\n\nYêu cầu đào tạo phải được quản lý trực tiếp phê duyệt trước khi đăng ký. Bộ phận nhân sự xác nhận ngân sách còn lại và lưu chứng từ thanh toán.\n\nNhân viên được nghỉ có lương tối đa 5 ngày để tham gia chương trình đào tạo bắt buộc. Lệ phí thi chứng chỉ chỉ được hoàn trả sau khi nhân viên gửi bằng chứng đã đạt.\n\nKhóa hội nhập cho nhân viên mới kéo dài 4 ngày làm việc. Người hướng dẫn cập nhật danh sách tham dự và kết quả hoàn thành vào cuối khóa.\n\nChính sách không nêu hỗ trợ học phí cho con của nhân viên, tiền thưởng doanh thu hay số điện thoại của quản lý. Các khóa ngoài chuyên môn cần phê duyệt bổ sung.\n\nNgười học chịu trách nhiệm hoàn thành bài tập và phản hồi chất lượng khóa học. Nhân sự tổng hợp tỷ lệ hoàn thành theo quý để điều chỉnh lịch đào tạo kế tiếp."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định nghỉ phép của công ty Sao Mai (tài liệu giả lập). Nhân viên được nghỉ phép hưởng lương 14 ngày trong mỗi năm dương lịch. Năm phép bắt đầu từ ngày 01 tháng 01 và kết thúc vào ngày 31 tháng 12.\n\nNgười lao động cần gửi yêu cầu nghỉ cho quản lý trực tiếp ít nhất năm ngày làm việc trước ngày bắt đầu nghỉ, trừ trường hợp khẩn cấp. Đơn nghỉ được duyệt phải được lưu trong hệ thống nhân sự.\n\nNgày nghỉ chưa sử dụng không tự động chuyển sang năm sau, ngoại trừ tối đa ba ngày được quản lý phê duyệt bằng văn bản. Nghỉ ốm từ ba ngày liên tiếp trở lên cần có giấy xác nhận của cơ sở y tế.\n\nBộ phận nhân sự kiểm tra số dư phép mỗi quý. Nhân viên nghỉ việc được thanh toán số ngày phép còn lại theo quy định của hợp đồng. Những câu hỏi về nghỉ thai sản không được quy định trong tài liệu này.\n\nMọi mốc thời gian trong chính sách này tính theo ngày làm việc của văn phòng tại Việt Nam. Quản lý không được yêu cầu nhân viên sử dụng ngày phép cho thời gian đào tạo bắt buộc."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.032210899999881804
+    },
+    {
+      "id": "cal-10",
+      "language": "vi",
+      "query_type": "hard_negative",
+      "query": "Thuế thu nhập cá nhân cho đơn mua hàng là bao nhiêu?",
+      "sources": [],
+      "evidence_spans": [],
+      "reference": "Không có thông tin.",
+      "answerable": false,
+      "document_recall_at_k": null,
+      "document_mrr": null,
+      "evidence_recall_at_k": null,
+      "evidence_mrr": null,
+      "retrieved_sources": [
+        "cal-procurement.txt",
+        "cal-library.txt",
+        "cal-training.txt",
+        "cal-leave.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Thuế thu nhập cá nhân cho đơn mua hàng là bao nhiêu?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Chính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua.\n\nHồ sơ mua sắm được phân quyền theo vai trò và chỉ người được giao nhiệm vụ mới có thể sửa. Bộ phận kiểm toán đối chiếu hồ sơ với biên bản nhận hàng vào cuối mỗi quý."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách mua sắm của công ty Sao Mai (tài liệu giả lập). Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng. Các đơn dưới ngưỡng này do người phụ trách ngân sách xác nhận.\n\nNhân viên phải thu thập ít nhất hai báo giá khi mua hàng hóa thông thường. Hồ sơ báo giá và quyết định lựa chọn nhà cung cấp được lưu trong mười tám tháng. Không được chia nhỏ một nhu cầu thành nhiều đơn để né cấp phê duyệt.\n\nNhà cung cấp được thanh toán trong vòng hai mươi mốt ngày kể từ khi phòng kế toán nhận đủ hóa đơn hợp lệ và biên bản nghiệm thu. Hóa đơn thiếu thông tin sẽ được trả lại để bổ sung.\n\nHàng hóa có giá trị cao phải được kiểm kê khi nhận. Bộ phận mua sắm ghi nhận số sê-ri, tình trạng và người tiếp nhận trong biên bản bàn giao.\n\nChính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua."
+          },
+          {
+            "source_file": "cal-library.txt",
+            "document_id": "7138ee21c1a5d7f2db8aa8d362179322045bbe9c9fffd98226da65fe13bf851c",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định thư viện Sao Mai (tài liệu giả lập). Mỗi độc giả được mượn tối đa 6 cuốn sách cùng lúc. Thời hạn mượn tiêu chuẩn là 21 ngày kể từ ngày nhận sách.\n\nĐộc giả có thể gia hạn một lần thêm 14 ngày nếu sách chưa có người đặt trước. Sách tham khảo và ấn phẩm có dấu đỏ chỉ được đọc tại chỗ, không được mang ra khỏi phòng đọc.\n\nKhi nhận sách, độc giả kiểm tra tình trạng bìa và báo ngay cho thủ thư nếu sách bị rách. Thẻ thư viện là tài sản cá nhân và không được cho người khác mượn.\n\nThư viện mở cửa từ 08 giờ đến 17 giờ vào các ngày làm việc. Lịch đóng cửa định kỳ được đăng trên bảng thông báo trước ít nhất một tuần.\n\nTài liệu này không quy định tiền phạt cho sách trả muộn, phí cấp thẻ hay số điện thoại riêng của trưởng thư viện. Mọi yêu cầu đặc biệt cần gửi qua quầy tiếp nhận.\n\nThủ thư lập danh sách sách cần bổ sung dựa trên lượt mượn và đề xuất ngân sách cho quản lý. Bản ghi mượn trả được lưu trong hệ thống thư viện để phục vụ kiểm kê định kỳ."
+          },
+          {
+            "source_file": "cal-training.txt",
+            "document_id": "4234748b8ecda6ca6f35744acb699158a50048d9d4bbc62d4a04ccb3be4246ef",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách đào tạo Sao Mai (tài liệu giả lập). Mỗi nhân viên có ngân sách học tập 900 USD mỗi năm. Ngân sách dùng cho khóa học, sách chuyên môn và lệ phí thi có liên quan đến công việc.\n\nYêu cầu đào tạo phải được quản lý trực tiếp phê duyệt trước khi đăng ký. Bộ phận nhân sự xác nhận ngân sách còn lại và lưu chứng từ thanh toán.\n\nNhân viên được nghỉ có lương tối đa 5 ngày để tham gia chương trình đào tạo bắt buộc. Lệ phí thi chứng chỉ chỉ được hoàn trả sau khi nhân viên gửi bằng chứng đã đạt.\n\nKhóa hội nhập cho nhân viên mới kéo dài 4 ngày làm việc. Người hướng dẫn cập nhật danh sách tham dự và kết quả hoàn thành vào cuối khóa.\n\nChính sách không nêu hỗ trợ học phí cho con của nhân viên, tiền thưởng doanh thu hay số điện thoại của quản lý. Các khóa ngoài chuyên môn cần phê duyệt bổ sung.\n\nNgười học chịu trách nhiệm hoàn thành bài tập và phản hồi chất lượng khóa học. Nhân sự tổng hợp tỷ lệ hoàn thành theo quý để điều chỉnh lịch đào tạo kế tiếp."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Biểu mẫu điện tử ghi nhận người gửi, người duyệt và thời điểm xử lý. Nhân sự chỉ thay đổi số dư sau khi có phê duyệt hợp lệ; bản ghi cũ được giữ để đối soát cuối năm."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.03197399999953632
+    },
+    {
+      "id": "cal-11",
+      "language": "vi",
+      "query_type": "hard_negative",
+      "query": "Thuật toán mã hóa cụ thể cho bản sao lưu là gì?",
+      "sources": [],
+      "evidence_spans": [],
+      "reference": "Không quy định thuật toán.",
+      "answerable": false,
+      "document_recall_at_k": null,
+      "document_mrr": null,
+      "evidence_recall_at_k": null,
+      "evidence_mrr": null,
+      "retrieved_sources": [
+        "cal-leave.txt",
+        "cal-library.txt",
+        "cal-procurement.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Thuật toán mã hóa cụ thể cho bản sao lưu là gì?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Biểu mẫu điện tử ghi nhận người gửi, người duyệt và thời điểm xử lý. Nhân sự chỉ thay đổi số dư sau khi có phê duyệt hợp lệ; bản ghi cũ được giữ để đối soát cuối năm."
+          },
+          {
+            "source_file": "cal-library.txt",
+            "document_id": "7138ee21c1a5d7f2db8aa8d362179322045bbe9c9fffd98226da65fe13bf851c",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định thư viện Sao Mai (tài liệu giả lập). Mỗi độc giả được mượn tối đa 6 cuốn sách cùng lúc. Thời hạn mượn tiêu chuẩn là 21 ngày kể từ ngày nhận sách.\n\nĐộc giả có thể gia hạn một lần thêm 14 ngày nếu sách chưa có người đặt trước. Sách tham khảo và ấn phẩm có dấu đỏ chỉ được đọc tại chỗ, không được mang ra khỏi phòng đọc.\n\nKhi nhận sách, độc giả kiểm tra tình trạng bìa và báo ngay cho thủ thư nếu sách bị rách. Thẻ thư viện là tài sản cá nhân và không được cho người khác mượn.\n\nThư viện mở cửa từ 08 giờ đến 17 giờ vào các ngày làm việc. Lịch đóng cửa định kỳ được đăng trên bảng thông báo trước ít nhất một tuần.\n\nTài liệu này không quy định tiền phạt cho sách trả muộn, phí cấp thẻ hay số điện thoại riêng của trưởng thư viện. Mọi yêu cầu đặc biệt cần gửi qua quầy tiếp nhận.\n\nThủ thư lập danh sách sách cần bổ sung dựa trên lượt mượn và đề xuất ngân sách cho quản lý. Bản ghi mượn trả được lưu trong hệ thống thư viện để phục vụ kiểm kê định kỳ."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Chính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua.\n\nHồ sơ mua sắm được phân quyền theo vai trò và chỉ người được giao nhiệm vụ mới có thể sửa. Bộ phận kiểm toán đối chiếu hồ sơ với biên bản nhận hàng vào cuối mỗi quý."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách mua sắm của công ty Sao Mai (tài liệu giả lập). Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng. Các đơn dưới ngưỡng này do người phụ trách ngân sách xác nhận.\n\nNhân viên phải thu thập ít nhất hai báo giá khi mua hàng hóa thông thường. Hồ sơ báo giá và quyết định lựa chọn nhà cung cấp được lưu trong mười tám tháng. Không được chia nhỏ một nhu cầu thành nhiều đơn để né cấp phê duyệt.\n\nNhà cung cấp được thanh toán trong vòng hai mươi mốt ngày kể từ khi phòng kế toán nhận đủ hóa đơn hợp lệ và biên bản nghiệm thu. Hóa đơn thiếu thông tin sẽ được trả lại để bổ sung.\n\nHàng hóa có giá trị cao phải được kiểm kê khi nhận. Bộ phận mua sắm ghi nhận số sê-ri, tình trạng và người tiếp nhận trong biên bản bàn giao.\n\nChính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua."
+          },
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định nghỉ phép của công ty Sao Mai (tài liệu giả lập). Nhân viên được nghỉ phép hưởng lương 14 ngày trong mỗi năm dương lịch. Năm phép bắt đầu từ ngày 01 tháng 01 và kết thúc vào ngày 31 tháng 12.\n\nNgười lao động cần gửi yêu cầu nghỉ cho quản lý trực tiếp ít nhất năm ngày làm việc trước ngày bắt đầu nghỉ, trừ trường hợp khẩn cấp. Đơn nghỉ được duyệt phải được lưu trong hệ thống nhân sự.\n\nNgày nghỉ chưa sử dụng không tự động chuyển sang năm sau, ngoại trừ tối đa ba ngày được quản lý phê duyệt bằng văn bản. Nghỉ ốm từ ba ngày liên tiếp trở lên cần có giấy xác nhận của cơ sở y tế.\n\nBộ phận nhân sự kiểm tra số dư phép mỗi quý. Nhân viên nghỉ việc được thanh toán số ngày phép còn lại theo quy định của hợp đồng. Những câu hỏi về nghỉ thai sản không được quy định trong tài liệu này.\n\nMọi mốc thời gian trong chính sách này tính theo ngày làm việc của văn phòng tại Việt Nam. Quản lý không được yêu cầu nhân viên sử dụng ngày phép cho thời gian đào tạo bắt buộc."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.03280400000039663
+    },
+    {
+      "id": "cal-12",
+      "language": "vi",
+      "query_type": "hard_negative",
+      "query": "Số điện thoại riêng của nhân viên lễ tân là gì?",
+      "sources": [],
+      "evidence_spans": [],
+      "reference": "Không công bố.",
+      "answerable": false,
+      "document_recall_at_k": null,
+      "document_mrr": null,
+      "evidence_recall_at_k": null,
+      "evidence_mrr": null,
+      "retrieved_sources": [
+        "cal-leave.txt",
+        "cal-library.txt",
+        "cal-visitors.txt",
+        "cal-procurement.txt"
+      ],
+      "retrieved_chunk_count": 5,
+      "abstained": false,
+      "response": {
+        "query": "Số điện thoại riêng của nhân viên lễ tân là gì?",
+        "answer": "",
+        "cached": false,
+        "status": "retrieved",
+        "error_code": null,
+        "context": [
+          {
+            "source_file": "cal-leave.txt",
+            "document_id": "66eaeb1b81ad6693814226e142bd0905acdedeafa49e54e0ad709a84c4c57b6d",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Biểu mẫu điện tử ghi nhận người gửi, người duyệt và thời điểm xử lý. Nhân sự chỉ thay đổi số dư sau khi có phê duyệt hợp lệ; bản ghi cũ được giữ để đối soát cuối năm."
+          },
+          {
+            "source_file": "cal-library.txt",
+            "document_id": "7138ee21c1a5d7f2db8aa8d362179322045bbe9c9fffd98226da65fe13bf851c",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy định thư viện Sao Mai (tài liệu giả lập). Mỗi độc giả được mượn tối đa 6 cuốn sách cùng lúc. Thời hạn mượn tiêu chuẩn là 21 ngày kể từ ngày nhận sách.\n\nĐộc giả có thể gia hạn một lần thêm 14 ngày nếu sách chưa có người đặt trước. Sách tham khảo và ấn phẩm có dấu đỏ chỉ được đọc tại chỗ, không được mang ra khỏi phòng đọc.\n\nKhi nhận sách, độc giả kiểm tra tình trạng bìa và báo ngay cho thủ thư nếu sách bị rách. Thẻ thư viện là tài sản cá nhân và không được cho người khác mượn.\n\nThư viện mở cửa từ 08 giờ đến 17 giờ vào các ngày làm việc. Lịch đóng cửa định kỳ được đăng trên bảng thông báo trước ít nhất một tuần.\n\nTài liệu này không quy định tiền phạt cho sách trả muộn, phí cấp thẻ hay số điện thoại riêng của trưởng thư viện. Mọi yêu cầu đặc biệt cần gửi qua quầy tiếp nhận.\n\nThủ thư lập danh sách sách cần bổ sung dựa trên lượt mượn và đề xuất ngân sách cho quản lý. Bản ghi mượn trả được lưu trong hệ thống thư viện để phục vụ kiểm kê định kỳ."
+          },
+          {
+            "source_file": "cal-visitors.txt",
+            "document_id": "51a6f69e6446923aaa2a55e1650ffe560a65c3b93e78c580b0c141b0c8a29ae0",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Quy trình khách đến văn phòng Sao Mai (tài liệu giả lập). Khách phải đăng ký trước ít nhất 3 ngày làm việc và nêu rõ người liên hệ, mục đích cùng thời gian dự kiến đến.\n\nKhi tới nơi, khách xuất trình giấy tờ có ảnh tại quầy lễ tân. Nhân viên tiếp đón cấp thẻ khách tạm thời và thông báo các khu vực được phép đi lại.\n\nThẻ khách phải được trả tại quầy khi rời tòa nhà. Khách không được tự vào phòng máy chủ, kho hồ sơ hoặc khu vực làm việc chưa được người phụ trách cho phép.\n\nGiờ tiếp khách thông thường là từ 09 giờ đến 16 giờ trong ngày làm việc. Cuộc gặp ngoài giờ cần được trưởng bộ phận phê duyệt trước.\n\nQuy trình này không công bố địa chỉ nhà riêng, số điện thoại cá nhân hay mức phụ cấp của nhân viên lễ tân. Khách làm mất thẻ phải báo ngay để khóa thẻ.\n\nNgười liên hệ chịu trách nhiệm đi cùng khách trong khu vực được cấp phép. Lễ tân lưu nhật ký ra vào theo ngày và chỉ cung cấp bản ghi cho bộ phận an ninh khi có yêu cầu hợp lệ."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 1,
+            "page_number": null,
+            "text": "Chính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua.\n\nHồ sơ mua sắm được phân quyền theo vai trò và chỉ người được giao nhiệm vụ mới có thể sửa. Bộ phận kiểm toán đối chiếu hồ sơ với biên bản nhận hàng vào cuối mỗi quý."
+          },
+          {
+            "source_file": "cal-procurement.txt",
+            "document_id": "31bea055fe082ad2cc023dc59af249be2bc3f80598d26a6d931b46aff874d959",
+            "chunk_index": 0,
+            "page_number": null,
+            "text": "Chính sách mua sắm của công ty Sao Mai (tài liệu giả lập). Đơn mua hàng có giá trị từ 12 triệu đồng trở lên phải được trưởng phòng phê duyệt trước khi đặt hàng. Các đơn dưới ngưỡng này do người phụ trách ngân sách xác nhận.\n\nNhân viên phải thu thập ít nhất hai báo giá khi mua hàng hóa thông thường. Hồ sơ báo giá và quyết định lựa chọn nhà cung cấp được lưu trong mười tám tháng. Không được chia nhỏ một nhu cầu thành nhiều đơn để né cấp phê duyệt.\n\nNhà cung cấp được thanh toán trong vòng hai mươi mốt ngày kể từ khi phòng kế toán nhận đủ hóa đơn hợp lệ và biên bản nghiệm thu. Hóa đơn thiếu thông tin sẽ được trả lại để bổ sung.\n\nHàng hóa có giá trị cao phải được kiểm kê khi nhận. Bộ phận mua sắm ghi nhận số sê-ri, tình trạng và người tiếp nhận trong biên bản bàn giao.\n\nChính sách này không quy định mức lương, thuế thu nhập cá nhân hay hạn mức mua xe. Các trường hợp khẩn cấp phải được giải trình sau khi mua."
+          }
+        ]
+      },
+      "failed": false,
+      "seconds": 0.03224179999961052
+    }
+  ],
+  "verification_environment": {
+    "transport": "in-process FastAPI TestClient; production ingestion called directly; not HTTP load test",
+    "embedding_model": "all-MiniLM-L6-v2",
+    "score_threshold": 0.35,
+    "top_k": 5,
+    "chunk_size": 1000,
+    "chunk_overlap": 150,
+    "indexed_chunks": 13,
+    "real_qdrant": true,
+    "real_local_embeddings": true,
+    "gemini_calls": 0,
+    "model_revision": "cached model; revision not independently pinned by this harness"
+  }
+}

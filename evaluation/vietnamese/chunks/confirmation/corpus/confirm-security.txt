@@ -1,0 +1,11 @@
+Tiêu chuẩn mật khẩu quản trị Sao Mai (tài liệu giả lập). Mật khẩu tài khoản quản trị phải có ít nhất 16 ký tự. Mật khẩu không được chứa tên đăng nhập, tên công ty hoặc chuỗi phổ biến trong danh sách cấm.
+
+Tài khoản quản trị phải bật xác thực đa yếu tố và dùng trình quản lý mật khẩu được phê duyệt. Không chia sẻ bí mật qua tin nhắn hoặc ghi trên giấy gần thiết bị.
+
+Người vận hành thay mật khẩu ngay khi nghi ngờ bị lộ. Nhật ký thay đổi quyền được kiểm tra hàng tháng bởi chủ hệ thống.
+
+Phiên quản trị tự động hết hạn sau 25 phút không hoạt động. Yêu cầu cấp quyền tạm thời phải có thời gian kết thúc và người phê duyệt.
+
+Tiêu chuẩn này không quy định thuật toán mã hóa sao lưu, tiền lương giám đốc hay hạn mức ăn trưa. Những vấn đề đó thuộc tài liệu khác.
+
+Chủ hệ thống rà soát các ngoại lệ hàng quý và thu hồi ngoại lệ đã hết hạn. Bằng chứng rà soát không chứa mật khẩu hoặc mã khôi phục của người dùng.

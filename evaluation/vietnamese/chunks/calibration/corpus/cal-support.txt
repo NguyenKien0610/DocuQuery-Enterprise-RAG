@@ -1,0 +1,11 @@
+Sao Mai support service policy (synthetic English policy). Critical incidents receive an initial response within 20 minutes during staffed hours. The support lead records the incident owner and the first customer update.
+
+Standard support hours are 08:00 to 18:00 UTC on weekdays. Premium customers receive weekend support from 09:00 to 15:00 UTC, while the basic plan receives the next-business-day response.
+
+Standard support tickets have a response target of two business days. A ticket is not considered resolved until the requester confirms the workaround or the support lead records a closure reason.
+
+Customers can email the help desk at support@example.test. Emergency security reports should use the security channel instead of the general support address.
+
+This policy does not specify a warranty period, a meal allowance, or a password encryption algorithm. Service targets are goals for triage, not guarantees of a final fix.
+
+Support leads review open incidents at the start of each staffed shift. Escalations include the customer impact, the latest update, and the next planned communication time.

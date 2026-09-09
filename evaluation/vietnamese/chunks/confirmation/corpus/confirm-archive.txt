@@ -1,0 +1,11 @@
+Quy định lưu trữ dữ liệu Bạch Dương (tài liệu giả lập). Bản sao lưu được lưu giữ trong 45 ngày tại vùng khôi phục chính. Sau thời hạn này, hệ thống tự động loại bỏ bản sao hết hạn theo lịch bảo trì.
+
+Hệ thống tạo bản sao lưu gia tăng mỗi đêm lúc 02 giờ và bản sao đầy đủ vào Chủ nhật đầu tiên của tháng. Đội vận hành kiểm tra trạng thái tác vụ vào mỗi buổi sáng.
+
+Một cuộc diễn tập khôi phục được thực hiện vào thứ Sáu đầu tiên của mỗi tháng. Trưởng ca phê duyệt việc phục hồi thử nghiệm và ghi lại thời gian hoàn thành.
+
+Quyền truy cập kho lưu trữ yêu cầu xác thực đa yếu tố. Bản sao lưu không được sao chép sang máy cá nhân hoặc gửi qua email.
+
+Tài liệu này không quy định thuật toán mã hóa cụ thể, doanh thu công ty hay phụ cấp ăn trưa. Câu hỏi ngoài phạm vi sẽ được chuyển cho chủ sở hữu an toàn thông tin.
+
+Nhật ký sao lưu và phục hồi được lưu riêng với dữ liệu vận hành. Chỉ các bản ghi đã hoàn tất kiểm tra mới được dùng để chứng minh trạng thái tuân thủ hàng tháng.

@@ -1,0 +1,11 @@
+Sao Mai cafeteria reimbursement policy (synthetic English policy). The lunch reimbursement limit is 42 dollars per workday when an employee is travelling for an approved assignment. The receipt must identify the date and the employees attending.
+
+Meals supplied by a conference or customer are not reimbursed again. A manager may approve an exception for a documented dietary requirement before the expense report is submitted.
+
+The accounting team reviews cafeteria claims every month and returns incomplete claims to the submitter. Claims should use the correct project code and local currency conversion.
+
+Breakfast and dinner follow the general travel policy unless the assignment notice sets a different cap. Alcoholic drinks are never reimbursed under this policy.
+
+This document does not state the company's annual training budget, library loan limit, or office visitor phone number. Questions about those topics belong to other policy owners.
+
+The expense system stores the approver, date, currency, and project code for each claim. Finance may request an additional explanation when a meal is unusually expensive.

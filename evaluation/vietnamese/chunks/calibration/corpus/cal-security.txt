@@ -1,0 +1,11 @@
+Sao Mai production security standard (synthetic English policy). Production access reviews occur every two months. The security team records each reviewer, the systems checked, and any access removed during the review.
+
+Administrative accounts must use multi-factor authentication and a password of at least sixteen characters. Shared accounts are prohibited unless a written exception is approved by the security owner.
+
+Security incidents must be reported to the on-call security channel within thirty minutes of discovery. The incident record should include the first observed time, affected service, and containment action.
+
+Backups are retained for forty-five days in the primary recovery region and are tested once each quarter. This policy does not specify a particular encryption algorithm for backup files.
+
+Access review evidence is retained for one year. Questions about employee salary, office addresses, and product revenue are outside the scope of this standard.
+
+Reviewers must close findings with an owner and due date. The security team publishes a monthly summary of overdue findings without exposing personal credentials or secret values.
